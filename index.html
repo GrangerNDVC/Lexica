@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LÉXICA v2 — Projet de cartes littéraires</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
 <style>
 :root{
   --ink:#1a1a2e;--parch:#f7f3e9;--parch2:#ede8d8;
@@ -210,8 +213,8 @@ textarea{resize:vertical;line-height:1.55}
     <div class="etape">
       <div class="etape-num" style="background:var(--green)">1</div>
       <div class="etape-body">
-        <div class="etape-title">🧭 Choisis ton entrée littéraire</div>
-        <div class="etape-desc">Les 4 entrées correspondent à ton programme de français de 5<sup>e</sup> : <b>Devenir héroïne/héros : destins romanesques</b> · <b>Voyager en poésie : « Du monde entier au cœur du monde »</b> · <b>Expérimenter et jouer au théâtre : la société sens dessus dessous</b> · <b>Imaginer, sentir, raisonner : des histoires pour plaire et instruire</b> (contes et fables). Choisis celle que tu travailles en classe — des idées de thèmes te seront proposées.</div>
+        <div class="etape-title">🧭 Choisis ta séquence</div>
+        <div class="etape-desc">Les 6 séquences correspondent à ta programmation de français de 5<sup>e</sup> : <b>🪞 Apprendre à se connaître</b> · <b>🦊 Renart et ses ruses</b> · <b>⚔️ Perceval et la Table Ronde</b> · <b>🗡️ De cape et de mots</b> (roman d'aventure) · <b>🌍 Voyager en poésie</b> · <b>🎭 L'Avare</b> (Molière). Choisis celle que tu travailles en ce moment en classe — des idées de thèmes te seront proposées.</div>
       </div>
     </div>
     <div class="etape">
@@ -236,7 +239,7 @@ textarea{resize:vertical;line-height:1.55}
       <div class="etape-num" style="background:var(--blue)">4</div>
       <div class="etape-body">
         <div class="etape-title">🖼️ Ajoute une illustration</div>
-        <div class="etape-desc">Elle apparaît au dos de ta carte, avec ton nom, ta classe, ton entrée littéraire et le type de texte choisi.</div>
+        <div class="etape-desc">Elle apparaît au dos de ta carte, avec ton nom, ta classe, ta séquence et le type de texte choisi.</div>
       </div>
     </div>
     <div class="etape">
@@ -255,7 +258,7 @@ textarea{resize:vertical;line-height:1.55}
       </div>
       <div style="background:rgba(255,255,255,.04);border:1px solid rgba(201,150,58,.25);border-radius:8px;padding:14px">
         <div style="font-weight:700;color:var(--gold-lt);margin-bottom:6px">🖼️ DOS (verso) — l'illustration</div>
-        <div style="font-size:.82rem;color:var(--silver-lt);line-height:1.5">On y trouve l'illustration, le nom de l'auteur, la classe et l'entrée littéraire — pratique pour le classement du/de la professeur·e.</div>
+        <div style="font-size:.82rem;color:var(--silver-lt);line-height:1.5">On y trouve l'illustration, le nom de l'auteur, la classe et la séquence — pratique pour le classement du/de la professeur·e.</div>
       </div>
     </div>
 
@@ -290,13 +293,15 @@ textarea{resize:vertical;line-height:1.55}
     <div class="form-row cols-3">
       <div class="form-group"><label>Prénom Nom</label><input type="text" id="e-auteur" placeholder="Prénom Nom" oninput="updatePreview()"></div>
       <div class="form-group"><label>Classe</label><input type="text" id="e-classe" placeholder="5ème A" oninput="updatePreview()"></div>
-      <div class="form-group"><label>Entrée littéraire</label>
+      <div class="form-group"><label>Séquence</label>
         <select id="e-entree" onchange="handleEntreeChange()">
           <option value="">— Choisir —</option>
-          <option value="Héros">⚔️ Héros : destins romanesques</option>
-          <option value="Poésie">🌍 Voyager en poésie</option>
-          <option value="Théâtre">🎭 Théâtre : société dessus dessous</option>
-          <option value="Fable">🦊 Plaire et instruire</option>
+          <option value="Connaitre">🪞 Apprendre à se connaître</option>
+          <option value="Renart">🦊 Renart et ses ruses</option>
+          <option value="Perceval">⚔️ Perceval et la Table Ronde</option>
+          <option value="Cape">🗡️ De cape et de mots</option>
+          <option value="Poesie">🌍 Voyager en poésie</option>
+          <option value="Avare">🎭 L'Avare</option>
         </select>
         <div id="e-entree-desc" style="font-size:.7rem;color:var(--silver-lt);margin-top:4px;line-height:1.3"></div>
       </div>
@@ -451,13 +456,15 @@ textarea{resize:vertical;line-height:1.55}
 
       <!-- Panneau options -->
       <div style="flex:0 0 260px;min-width:220px">
-        <div style="font-size:.85rem;font-weight:700;color:var(--gold-lt);margin-bottom:8px">Entrée littéraire :</div>
+        <div style="font-size:.85rem;font-weight:700;color:var(--gold-lt);margin-bottom:8px">Séquence :</div>
         <select class="deck-filter" id="tirage-entree" style="width:100%;margin-bottom:16px" onchange="renderPoids()">
-          <option value="">Toutes entrées</option>
-          <option value="Héros">⚔️ Héros</option>
-          <option value="Poésie">🌍 Poésie</option>
-          <option value="Théâtre">🎭 Théâtre</option>
-          <option value="Fable">🦊 Fable</option>
+          <option value="">Toutes séquences</option>
+          <option value="Connaitre">🪞 Apprendre à se connaître</option>
+          <option value="Renart">🦊 Renart et ses ruses</option>
+          <option value="Perceval">⚔️ Perceval et la Table Ronde</option>
+          <option value="Cape">🗡️ De cape et de mots</option>
+          <option value="Poesie">🌍 Voyager en poésie</option>
+          <option value="Avare">🎭 L'Avare</option>
         </select>
         <div style="font-size:.85rem;font-weight:700;color:var(--gold-lt);margin-bottom:10px">Catégories :</div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
@@ -507,10 +514,12 @@ textarea{resize:vertical;line-height:1.55}
     <button class="btn btn-secondary" onclick="resetFiche()">↺ Vider</button>
     <select class="deck-filter" id="fiche-sequence" onchange="loadFicheSequence()">
       <option value="">— Modèle pré-rempli : choisir une séquence —</option>
-      <option value="heros">⚔️ Héros</option>
-      <option value="poesie">🌍 Poésie</option>
-      <option value="theatre">🎭 Théâtre</option>
-      <option value="fable">🦊 Fable / Conte</option>
+      <option value="connaitre">🪞 Apprendre à se connaître</option>
+      <option value="renart">🦊 Renart et ses ruses</option>
+      <option value="perceval">⚔️ Perceval et la Table Ronde</option>
+      <option value="cape">🗡️ De cape et de mots</option>
+      <option value="poesie">🌍 Voyager en poésie</option>
+      <option value="avare">🎭 L'Avare</option>
     </select>
   </div>
   <div class="fiche-projet" id="fiche-print-area">
@@ -521,7 +530,7 @@ textarea{resize:vertical;line-height:1.55}
       <div class="fiche-field"><label>Date</label><input class="fiche-input" id="f-date" placeholder="…"></div>
     </div>
     <div class="form-row cols-2" style="margin-top:10px">
-      <div class="fiche-field"><label>Entrée littéraire</label><input class="fiche-input" id="f-entree" placeholder="…"></div>
+      <div class="fiche-field"><label>Séquence</label><input class="fiche-input" id="f-entree" placeholder="…"></div>
       <div class="fiche-field"><label>Niveau visé (★ / ★★ / ★★★)</label><input class="fiche-input" id="f-niveau" placeholder="…"></div>
     </div>
     <div style="margin:14px 0;background:rgba(74,44,122,.08);border-left:4px solid var(--purple);padding:12px;border-radius:4px">
@@ -637,8 +646,13 @@ textarea{resize:vertical;line-height:1.55}
           <option value="validee">Validées</option><option value="rejetee">À retravailler</option>
         </select>
         <select class="deck-filter" id="filter-entree" onchange="renderDeck()">
-          <option value="">Toutes entrées</option><option value="Héros">Héros</option>
-          <option value="Poésie">Poésie</option><option value="Théâtre">Théâtre</option><option value="Fable">Fable</option>
+          <option value="">Toutes séquences</option>
+          <option value="Connaitre">Apprendre à se connaître</option>
+          <option value="Renart">Renart et ses ruses</option>
+          <option value="Perceval">Perceval et la Table Ronde</option>
+          <option value="Cape">De cape et de mots</option>
+          <option value="Poesie">Voyager en poésie</option>
+          <option value="Avare">L'Avare</option>
         </select>
         <span class="deck-count" id="deck-count">0 carte(s)</span>
       </div>
@@ -680,35 +694,108 @@ textarea{resize:vertical;line-height:1.55}
 const PROF_PWD = 'lexica2026';
 
 // ══════════════════════════════════════════════════════
+// FIREBASE — deck partagé en temps réel entre tous les postes
+// ══════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyBwoQqcFCH7ssSUyGkFd52v6Wam1O4WiVw",
+  authDomain: "lexica-488e9.firebaseapp.com",
+  databaseURL: "https://lexica-488e9-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "lexica-488e9",
+  storageBucket: "lexica-488e9.firebasestorage.app",
+  messagingSenderId: "3644116964",
+  appId: "1:3644116964:web:5ae47e4211bb5603c301f1"
+};
+firebase.initializeApp(firebaseConfig);
+const fbAuth = firebase.auth();
+const fbDB = firebase.database();
+let fbReady = false; // devient true une fois connecté et le premier snapshot reçu
+
+function refreshActiveView(){
+  const activeView = document.querySelector('.view.active');
+  if(!activeView)return;
+  const id = activeView.id;
+  if(id==='view-prof' && document.getElementById('prof-content')?.style.display!=='none') renderDeck();
+  if(id==='view-prog') renderProg();
+  if(id==='view-tirage') renderPoids();
+}
+
+// Migration ponctuelle : si d'anciennes cartes existent en localStorage (test hors-ligne
+// avant la mise en place de Firebase) et que la base partagée est vide, on les y envoie.
+function migrateLocalDeckOnce(){
+  if(localStorage.getItem('lexica_deck_migrated'))return;
+  const local = JSON.parse(localStorage.getItem('lexica_deck')||'[]');
+  if(local.length){
+    fbDB.ref('cards').once('value').then(snap=>{
+      if(!snap.exists()){
+        const updates={};
+        local.forEach(c=>{ if(c && c.id) updates[c.id]=c; });
+        if(Object.keys(updates).length) fbDB.ref('cards').update(updates);
+      }
+      localStorage.setItem('lexica_deck_migrated','1');
+    });
+  } else {
+    localStorage.setItem('lexica_deck_migrated','1');
+  }
+}
+
+fbAuth.onAuthStateChanged(user=>{
+  if(!user)return;
+  migrateLocalDeckOnce();
+  fbDB.ref('cards').on('value', snapshot=>{
+    const data = snapshot.val() || {};
+    deck = Object.values(data);
+    fbReady = true;
+    refreshActiveView();
+  }, err=>{
+    console.error('Firebase deck sync error', err);
+    toast('⚠️ Synchronisation impossible — vérifie ta connexion', true);
+  });
+});
+fbAuth.signInAnonymously().catch(err=>{
+  console.error('Firebase auth error', err);
+  toast('⚠️ Connexion au serveur impossible — mode hors-ligne', true);
+});
+
+// ══════════════════════════════════════════════════════
 // BASE DE CONTRAINTES
 // ══════════════════════════════════════════════════════
 const DB = {
-  Héros:{
+  Connaitre:{
+    grammaire:['Phrase avec attribut du sujet (« Je suis… »)','Complément du nom pour préciser un trait','Proposition subordonnée relative (qui/que me caractérise)','Comparaison introduite par « comme »','Énumération de qualités ou de goûts','Phrase exclamative pour exprimer une émotion','Question rhétorique sur soi-même','Négation pour dire ce qu\'on n\'est pas'],
+    lexique:['Champ lexical des goûts et des loisirs','Trois adjectifs de caractère bien choisis','Comparaison valorisante','Vocabulaire des émotions et des sentiments','Métaphore pour se décrire','Registre familier assumé','Antithèse (ce que je suis / ce que je ne suis pas)','Expression imagée sur soi'],
+    conjugaison:['Présent de l\'indicatif (habitudes, goûts)','Passé composé (un souvenir marquant)','Futur simple (un projet, un rêve)','Imparfait (comment j\'étais avant)','Conditionnel présent (ce que j\'aimerais être)','Présent de vérité générale']
+  },
+  Renart:{
+    grammaire:['Connecteur logique de conséquence (donc, ainsi)','Proposition subordonnée de cause','Négation restrictive (ne… que)','Adverbes de manière bien choisis','Proposition subordonnée de but','Complément circonstanciel de temps','Apposition (caractérisation d\'un personnage)','Phrase complexe par subordination'],
+    lexique:['Champ lexical de la ruse / de la sagesse','Vocabulaire des animaux et leurs qualités symboliques','Morale rédigée en style sentencieux','Famille de mots autour de « sage » ou « orgueilleux »','Comparaison entre deux personnages','Trois adjectifs d\'attitude (fier, rusé, naïf…)','Registre adapté au personnage animal','Proverbe ou expression figée'],
+    conjugaison:['Présent de narration','Passé simple des actions','Présent de vérité générale (pour la morale)','Imparfait descriptif','Conditionnel présent (ruse / hypothèse)','Subjonctif présent','Futur simple','Infinitif à valeur de narration']
+  },
+  Perceval:{
     grammaire:['Proposition subordonnée relative','Complément circonstanciel de manière développé','Attribut du sujet expressif','COD avec expansion adjectivale','Discours direct','Discours indirect','Proposition subordonnée de cause','Phrase complexe par coordination','Apposition caractérisante'],
     lexique:['Champ lexical du courage','Champ lexical du combat','Famille de mots autour de « vaillant »','Trois adjectifs qualificatifs précis et variés','Métaphore liée au combat','Comparaison expressive','Vocabulaire de la chevalerie / de la quête','Registre soutenu (mot non-courant)','Oxymore'],
     conjugaison:['Passé simple des actions','Imparfait pour le décor / la durée','Alternance passé simple / imparfait justifiée','Présent de narration','Plus-que-parfait pour antériorité','Conditionnel présent (souhait / hypothèse)','Subjonctif présent','Futur simple']
   },
-  Poésie:{
+  Cape:{
+    grammaire:['Discours direct avec verbe introducteur varié','Phrase complexe par subordination (cause, conséquence)','Question rhétorique dans un dialogue','Ironie / antiphrase','Apostrophe (interpeller un personnage)','Négation restrictive (ne… que)','Phrase courte pour un effet de rythme (suspense)','Discours indirect'],
+    lexique:['Champ lexical de la ruse et du stratagème','Jeu de mots ou expression à double sens','Champ lexical de l\'aventure et du danger','Trois verbes de parole variés (répliquer, rétorquer, persifler…)','Comparaison inattendue','Registre soutenu contrastant avec le familier','Antithèse','Métaphore filée sur le combat verbal'],
+    conjugaison:['Passé simple des actions d\'aventure','Imparfait pour le décor ou la tension','Présent de narration (accélérer l\'action)','Conditionnel présent (bluff, hypothèse)','Impératif présent (ordre, défi)','Plus-que-parfait (antériorité d\'un stratagème)','Futur simple (menace, promesse)']
+  },
+  Poesie:{
     grammaire:['Énumération de groupes nominaux','Phrase nominale (sans verbe conjugué)','Connecteur d\'opposition (mais, pourtant)','Répétition intentionnelle (anaphore)','Proposition subordonnée de temps','Apposition','Question rhétorique','Phrase exclamative','Juxtaposition de propositions courtes'],
     lexique:['Champ lexical de la lumière / de l\'ombre','Personnification d\'un élément naturel','Allitération douce ou dure','Trois couleurs nuancées','Métaphore filée sur deux lignes','Vocabulaire des cinq sens','Registre poétique soutenu (azur, frémir…)','Oxymore','Synesthésie'],
     conjugaison:['Présent de vérité générale','Imparfait descriptif','Passé composé','Futur simple (projection / rêve)','Conditionnel présent (rêve / hypothèse)','Présent de l\'indicatif','Subjonctif imparfait (style soutenu)','Infinitif à valeur d\'impératif']
   },
-  Théâtre:{
+  Avare:{
     grammaire:['Didascalies précises et expressives','Niveaux de langue contrastés entre personnages','Questions rhétoriques dans une réplique','Connecteurs d\'argumentation (donc, car, puisque)','Subjonctif présent dans une réplique','Phrase longue vs courte (effet rythmique)','Discours direct avec verbes introducteurs variés','Négation restrictive (ne… que)'],
-    lexique:['Vocabulaire du théâtre (réplique, tirade, aparté…)','Champ lexical de la tromperie / de la ruse','Expressions familières contrastant avec le soutenu','Interjections et exclamations expressives','Trois verbes d\'action variés pour un même personnage','Comparaison dans une réplique','Vocabulaire des émotions et des sentiments','Registre comique'],
+    lexique:['Vocabulaire du théâtre (réplique, tirade, aparté…)','Champ lexical de l\'avarice et de l\'argent','Champ lexical de la tromperie / de la ruse','Expressions familières contrastant avec le soutenu','Interjections et exclamations expressives','Trois verbes d\'action variés pour un même personnage','Comparaison dans une réplique','Registre comique'],
     conjugaison:['Présent de l\'indicatif (dialogue vivant)','Impératif présent','Subjonctif présent','Futur simple (menace / promesse)','Conditionnel présent (politesse / reproche)','Passé composé','Imparfait narratif','Passé simple dans un récit enchâssé']
-  },
-  Fable:{
-    grammaire:['Connecteur logique de conséquence (donc, ainsi)','Proposition subordonnée de cause','Négation restrictive (ne… que)','Adverbes de manière bien choisis','Proposition subordonnée de but','Complément circonstanciel de temps','Apposition (caractérisation d\'un personnage)','Phrase complexe par subordination'],
-    lexique:['Champ lexical de la ruse / de la sagesse','Vocabulaire des animaux et leurs qualités symboliques','Morale rédigée en style sentencieux','Famille de mots autour de « sage » ou « orgueilleux »','Comparaison entre deux personnages','Trois adjectifs d\'attitude (fier, rusé, naïf…)','Registre adapté au personnage animal','Proverbe ou expression figée'],
-    conjugaison:['Présent de narration','Passé simple des actions','Présent de vérité générale (pour la morale)','Imparfait descriptif','Conditionnel présent (ruse / hypothèse)','Subjonctif présent','Futur simple','Infinitif à valeur de narration']
   }
 };
 
 // ══════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════
-let deck = JSON.parse(localStorage.getItem('lexica_deck')||'[]');
+let deck = []; // rempli en temps réel par Firebase (voir plus haut), plus par localStorage
 let scoreA=0, scoreB=0, scoreLogs=[];
 let manches = JSON.parse(localStorage.getItem('lexica_manches')||'[]');
 let illustrationData=null, currentNiveau=0, tirageCount=3;
@@ -723,20 +810,24 @@ const C_TYPES = {
   autre:{label:'✏️ Autre',cls:'tb-autre',ptcls:'pt-a'}
 };
 
-// Intitulés officiels complets (programme de français cycle 4, 5e — B.O. du 5 mars 2026)
+// Séquences de la programmation annuelle 5e (2026-2027)
 const ENTREE_FULL = {
-  Héros:'📖 Devenir héroïne / héros : destins romanesques',
-  Poésie:'📖 Voyager en poésie : « Du monde entier au cœur du monde »',
-  Théâtre:'📖 Expérimenter et jouer au théâtre : la société sens dessus dessous',
-  Fable:'📖 Imaginer, sentir, raisonner : des histoires pour plaire et instruire (contes, fables)'
+  Connaitre:'🪞 Apprendre à se connaître',
+  Renart:'🦊 Renart et ses ruses',
+  Perceval:'⚔️ Perceval et la Table Ronde',
+  Cape:'🗡️ De cape et de mots — roman d\'aventure intégral (ruse et maniement de la langue)',
+  Poesie:'🌍 Voyager en poésie',
+  Avare:'🎭 L\'Avare (Molière)'
 };
 
-// Idées de thèmes suggérées, en lien avec chaque entrée du programme
+// Idées de thèmes suggérées, en lien avec chaque séquence
 const THEMES_SUGG = {
-  Héros:['La quête et l\'épreuve initiatique','Un anti-héros ou une héroïne malgré elle','Du héros antique au héros moderne','Le courage face à la peur','La chevalerie et l\'honneur','Un destin romanesque hors du commun'],
-  Poésie:['Voyager sans bouger : le monde intérieur','Un ailleurs rêvé, un pays imaginaire','Les cinq sens en voyage','La poésie du quotidien transfiguré','Partir, revenir, se souvenir','« Du monde entier au cœur du monde »'],
-  Théâtre:['Maîtres et valets : le monde à l\'envers','Le comique de situation','Une société bousculée par la ruse','Le mensonge et le quiproquo','Pouvoir et obéissance renversés'],
-  Fable:['La ruse contre la force','Un défaut humain incarné par un animal','La sagesse cachée derrière le rire','Plaire pour mieux instruire','Le faible triomphe du fort']
+  Connaitre:['Un trait de caractère qui me définit','Une passion ou un talent caché','Un souvenir qui m\'a changé','Ce que je voudrais qu\'on sache de moi','Mon animal totem imaginaire'],
+  Renart:['La ruse contre la force','Un défaut humain incarné par un animal','La sagesse cachée derrière le rire','Plaire pour mieux instruire','Le faible triomphe du fort'],
+  Perceval:['La quête et l\'épreuve initiatique','Un anti-héros ou une héroïne malgré elle','Du héros antique au héros moderne','Le courage face à la peur','La chevalerie et l\'honneur','Un destin romanesque hors du commun'],
+  Cape:['La ruse plus forte que la force','Un mot d\'esprit qui sauve la mise','Le duel verbal plutôt que le duel à l\'épée','Une évasion rocambolesque','Le langage comme arme'],
+  Poesie:['Voyager sans bouger : le monde intérieur','Un ailleurs rêvé, un pays imaginaire','Les cinq sens en voyage','La poésie du quotidien transfiguré','Partir, revenir, se souvenir','« Du monde entier au cœur du monde »'],
+  Avare:['Maîtres et valets : le monde à l\'envers','Le comique de situation','L\'avarice poussée à l\'absurde','Le mensonge et le quiproquo','L\'argent avant l\'amour']
 };
 
 // ══════════════════════════════════════════════════════
@@ -816,7 +907,7 @@ function setContrainteSlot(id,value){
 }
 function addContrainteSlot(){
   if(contraintes.length>=3){toast('⚠️ Maximum 3 contraintes par carte',true);return;}
-  if(!document.getElementById('e-entree').value){toast('⚠️ Choisis d\'abord une entrée littéraire',true);return;}
+  if(!document.getElementById('e-entree').value){toast('⚠️ Choisis d\'abord une séquence',true);return;}
   contraintes.push({id:'c'+Date.now()+Math.random(),type:'',val:'',customVal:''});
   renderContraintes();updatePreview();
 }
@@ -829,7 +920,7 @@ function renderContraintes(){
   const cont=document.getElementById('contraintes-container');
   const addRow=document.getElementById('add-c-btn-row');
   if(!entree){
-    cont.innerHTML='<p style="font-size:.82rem;color:var(--silver-lt);font-style:italic">Choisis d\'abord une entrée littéraire ci-dessus pour voir les contraintes possibles.</p>';
+    cont.innerHTML='<p style="font-size:.82rem;color:var(--silver-lt);font-style:italic">Choisis d\'abord une séquence ci-dessus pour voir les contraintes possibles.</p>';
     addRow.innerHTML='';
     currentNiveau=0;updateNiveauLabel();
     return;
@@ -950,14 +1041,19 @@ function submitCard(){
   if(!d.auteur)return toast('⚠️ Entre ton prénom et nom',true);
   if(!d.classe)return toast('⚠️ Entre ta classe',true);
   if(!d.titre)return toast('⚠️ Donne un titre',true);
-  if(!d.entree)return toast('⚠️ Choisis une entrée littéraire',true);
+  if(!d.entree)return toast('⚠️ Choisis une séquence',true);
   if(!d.texte||d.texte.length<50)return toast('⚠️ Texte trop court !',true);
   if(!d.contraintes.length)return toast('⚠️ Choisis au moins 1 contrainte',true);
   const incomplete=contraintes.some(c=>!c.val||(c.val==='__custom__'&&!c.customVal));
   if(incomplete)return toast('⚠️ Termine de choisir/décrire chacune de tes contraintes',true);
   const card={...d,id:Date.now()+'_'+Math.random().toString(36).substr(2,5),
     dateEnvoi:new Date().toLocaleDateString('fr-FR'),statut:'attente',commentaire:''};
-  deck.push(card);saveDeck();toast('✅ Carte envoyée au deck !');setTimeout(resetForm,800);
+  fbDB.ref('cards/'+card.id).set(card).then(()=>{
+    toast('✅ Carte envoyée au deck !');setTimeout(resetForm,800);
+  }).catch(err=>{
+    console.error('Envoi carte échoué', err);
+    toast('⚠️ Envoi impossible — vérifie ta connexion et réessaie',true);
+  });
 }
 function resetForm(){
   ['e-auteur','e-classe','e-titre','e-texte'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
@@ -1193,10 +1289,12 @@ function exportCarteJury(){
 // FICHE PROJET
 // ══════════════════════════════════════════════════════
 const FICHE_PRESETS={
-  heros:{entree:'Devenir héroïne/héros : destins romanesques',c1:'Passé simple pour les actions du héros',c2:'Champ lexical du courage',c3:'Proposition subordonnée relative'},
-  poesie:{entree:'Voyager en poésie : « Du monde entier au cœur du monde »',c1:'Personnification d\'un élément naturel',c2:'Champ lexical de la lumière',c3:'Anaphore (répétition intentionnelle)'},
-  theatre:{entree:'Expérimenter et jouer au théâtre : la société sens dessus dessous',c1:'Niveaux de langue contrastés',c2:'Didascalies expressives',c3:'Subjonctif présent dans une réplique'},
-  fable:{entree:'Imaginer, sentir, raisonner : des histoires pour plaire et instruire',c1:'Connecteur logique de conséquence',c2:'Morale sentencieuse',c3:'Présent de vérité générale'}
+  connaitre:{entree:'Apprendre à se connaître',c1:'Trois adjectifs de caractère bien choisis',c2:'Champ lexical des goûts et des loisirs',c3:'Comparaison introduite par « comme »'},
+  renart:{entree:'Renart et ses ruses',c1:'Champ lexical de la ruse / de la sagesse',c2:'Vocabulaire des animaux et leurs qualités symboliques',c3:'Morale rédigée en style sentencieux'},
+  perceval:{entree:'Perceval et la Table Ronde',c1:'Passé simple pour les actions du héros',c2:'Champ lexical du courage',c3:'Proposition subordonnée relative'},
+  cape:{entree:'De cape et de mots',c1:'Champ lexical de la ruse et du stratagème',c2:'Discours direct avec verbe introducteur varié',c3:'Jeu de mots ou expression à double sens'},
+  poesie:{entree:'Voyager en poésie',c1:'Personnification d\'un élément naturel',c2:'Champ lexical de la lumière',c3:'Anaphore (répétition intentionnelle)'},
+  avare:{entree:'L\'Avare (Molière)',c1:'Niveaux de langue contrastés',c2:'Champ lexical de l\'avarice et de l\'argent',c3:'Subjonctif présent dans une réplique'}
 };
 function loadFicheSequence(){
   const k=document.getElementById('fiche-sequence').value;
@@ -1219,7 +1317,7 @@ function resetFiche(){
 // PROGRESSION — calculée à partir des cartes réellement envoyées (rien n'est pré-écrit)
 // ══════════════════════════════════════════════════════
 function computeProgression(){
-  // Regroupe, par entrée littéraire, chaque contrainte distincte réellement choisie
+  // Regroupe, par séquence, chaque contrainte distincte réellement choisie
   // par les élèves dans leurs cartes envoyées : nb d'utilisations, élèves concernés,
   // et statut « validée » dès qu'au moins une carte l'utilisant a été validée par le prof.
   const byEntree={};
@@ -1314,7 +1412,9 @@ function checkPwd(){
     renderDeck();updateClasseFilters();
   }else toast('❌ Mot de passe incorrect',true);
 }
-function saveDeck(){localStorage.setItem('lexica_deck',JSON.stringify(deck));}
+// saveDeck() n'existe plus : chaque action (valider/rejeter/supprimer/envoyer) écrit
+// directement la carte concernée dans Firebase ; le tableau local `deck` se met à jour
+// tout seul via l'écoute temps réel (voir fbDB.ref('cards').on('value', ...) plus haut).
 function updateClasseFilters(){
   const classes=[...new Set(deck.map(c=>c.classe).filter(Boolean))].sort();
   ['filter-classe','export-classe'].forEach(id=>{
@@ -1363,9 +1463,23 @@ function renderDeck(){
     </div>`;
   }).join('');
 }
-function validerCarte(id){const c=deck.find(c=>c.id===id);if(c){c.statut='validee';c.commentaire='';}saveDeck();renderDeck();toast('✅ Carte validée !');}
-function rejeterCarte(id){const c=deck.find(c=>c.id===id);const t=document.getElementById('comm-txt-'+id)?.value||'';if(c){c.statut='rejetee';c.commentaire=t;}saveDeck();renderDeck();toast('↩ Renvoyée à l\'élève');}
-function supprimerCarte(id){if(!confirm('Supprimer définitivement cette carte ?'))return;deck=deck.filter(c=>c.id!==id);saveDeck();renderDeck();toast('🗑️ Supprimée');}
+function validerCarte(id){
+  fbDB.ref('cards/'+id).update({statut:'validee',commentaire:''})
+    .then(()=>toast('✅ Carte validée !'))
+    .catch(()=>toast('⚠️ Action impossible — vérifie ta connexion',true));
+}
+function rejeterCarte(id){
+  const t=document.getElementById('comm-txt-'+id)?.value||'';
+  fbDB.ref('cards/'+id).update({statut:'rejetee',commentaire:t})
+    .then(()=>toast('↩ Renvoyée à l\'élève'))
+    .catch(()=>toast('⚠️ Action impossible — vérifie ta connexion',true));
+}
+function supprimerCarte(id){
+  if(!confirm('Supprimer définitivement cette carte ?'))return;
+  fbDB.ref('cards/'+id).remove()
+    .then(()=>toast('🗑️ Supprimée'))
+    .catch(()=>toast('⚠️ Suppression impossible — vérifie ta connexion',true));
+}
 function toggleComm(id){document.getElementById('comm-'+id)?.classList.toggle('open');}
 function previewCard(id){
   const c=deck.find(c=>c.id===id);if(!c)return;
@@ -1465,9 +1579,14 @@ function doImportJSON(input){
   r.onload=e=>{
     try{
       const imp=JSON.parse(e.target.result);if(!Array.isArray(imp))throw new Error();
-      const ex=new Set(deck.map(c=>c.id));let added=0;
-      imp.forEach(c=>{if(!ex.has(c.id)){deck.push(c);added++;}});
-      saveDeck();renderDeck();toast(`📂 ${added} carte(s) importée(s)`);
+      const ex=new Set(deck.map(c=>c.id));
+      const updates={};
+      imp.forEach(c=>{if(c&&c.id&&!ex.has(c.id))updates[c.id]=c;});
+      const added=Object.keys(updates).length;
+      if(!added){toast('ℹ️ Rien à importer (déjà présent)');return;}
+      fbDB.ref('cards').update(updates)
+        .then(()=>toast(`📂 ${added} carte(s) importée(s)`))
+        .catch(()=>toast('⚠️ Import impossible — vérifie ta connexion',true));
     }catch{toast('❌ JSON invalide',true);}
   };
   r.readAsText(file);input.value='';
