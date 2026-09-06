@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LÉXICA v2 — Projet de cartes littéraires</title>
+<title>LEXICA v2 — Projet de cartes littéraires</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
@@ -188,7 +188,7 @@ textarea{resize:vertical;line-height:1.55}
 
 <header>
   <div class="logo">⚔️</div>
-  <div><h1>LÉXICA</h1><p>Projet de cartes littéraires — Français 5ème</p></div>
+  <div><h1>LEXICA</h1><p>Projet de cartes littéraires — Français 5ème</p></div>
   <nav class="nav-tabs">
     <button class="nav-btn active" onclick="setView('regles')" id="btn-regles">📖 Règles</button>
     <button class="nav-btn" onclick="setView('eleve')" id="btn-eleve">✏️ Créer une carte</button>
@@ -205,9 +205,9 @@ textarea{resize:vertical;line-height:1.55}
 <!-- ════ VUE RÈGLES ════ -->
 <div class="view active" id="view-regles">
   <div class="panel" style="max-width:820px;margin:0 auto">
-    <div class="panel-title">📖 Règles du jeu LÉXICA</div>
+    <div class="panel-title">📖 Règles du jeu LEXICA</div>
     <p style="font-size:.85rem;color:var(--silver-lt);margin-bottom:18px;line-height:1.65">
-      LÉXICA est un jeu de cartes littéraires : chaque carte est un texte que <b>tu écris toi-même</b>, en respectant des contraintes de grammaire, de vocabulaire ou de conjugaison que <b>tu choisis</b>. Plus tu prends de contraintes, plus ta carte est difficile — et plus elle peut rapporter de points en match !
+      LEXICA est un jeu de cartes littéraires : chaque carte est un texte que <b>tu écris toi-même</b>, en respectant des contraintes de grammaire, de vocabulaire ou de conjugaison que <b>tu choisis</b>. Plus tu prends de contraintes, plus ta carte est difficile — et plus elle peut rapporter de points en match !
     </p>
 
     <div class="etape">
@@ -220,37 +220,51 @@ textarea{resize:vertical;line-height:1.55}
     <div class="etape">
       <div class="etape-num" style="background:var(--purple)">2</div>
       <div class="etape-body">
+        <div class="etape-title">🏷️ Choisis ton genre, ton type de texte et ton registre</div>
+        <div class="etape-desc">Trois choix indépendants — tu peux en choisir un, deux ou les trois, ça t'aide à comprendre la différence : le <b>genre</b> (conte, roman, théâtre, poésie…), le <b>type de texte</b> (narratif, descriptif, explicatif, argumentatif, injonctif) et le <b>registre</b> (comique, tragique, épique…).</div>
+      </div>
+    </div>
+    <div class="etape">
+      <div class="etape-num" style="background:var(--blue)">3</div>
+      <div class="etape-body">
+        <div class="etape-title">⏳ Choisis ton temps dominant</div>
+        <div class="etape-desc"><b>Discours</b> (présent dominant) ou <b>Récit</b> (passé simple / imparfait) — c'est obligatoire. Choisir le récit fait automatiquement passer ta carte en <b style="color:var(--gold-lt)">Niveau ★★ minimum</b>, même sans contrainte en plus. Attention : c'est une contrainte exigeante, les erreurs de temps sont fortement pénalisées pendant le match !</div>
+      </div>
+    </div>
+    <div class="etape">
+      <div class="etape-num" style="background:var(--gold);color:var(--ink)">4</div>
+      <div class="etape-body">
         <div class="etape-title">🎯 Choisis 1, 2 ou 3 contraintes — c'est toi qui décides !</div>
         <div class="etape-desc">Un menu déroulant te propose des contraintes de grammaire (📐), de lexique (📚) et de conjugaison (🔵), toutes mélangées. Tu choisis librement dans l'ordre que tu veux — tu peux très bien prendre 3 contraintes de lexique, rien ne t'oblige à mélanger les catégories !<br><br>
         <b style="color:var(--bronze-lt)">1 contrainte choisie = ★ Niveau 1</b><br>
         <b style="color:var(--silver-lt)">2 contraintes choisies = ★★ Niveau 2</b><br>
         <b style="color:var(--gold-lt)">3 contraintes choisies = ★★★ Niveau 3</b><br>
-        Le niveau de ta carte se calcule tout seul, automatiquement, tu n'as rien à choisir en plus.</div>
+        Le niveau de ta carte se calcule tout seul, automatiquement (le temps du récit peut déjà t'avoir mis à ★★, voir étape précédente).</div>
       </div>
     </div>
     <div class="etape">
-      <div class="etape-num" style="background:var(--gold);color:var(--ink)">3</div>
+      <div class="etape-num" style="background:var(--red)">5</div>
       <div class="etape-body">
         <div class="etape-title">✏️ Écris ton texte</div>
-        <div class="etape-desc">Rédige un texte (15 à 20 lignes environ) qui correspond au type de texte choisi (portrait, poème, scène, fable…) et qui contient <b>toutes</b> tes contraintes, de façon repérable — c'est ce que tu devras prouver pendant le match.</div>
+        <div class="etape-desc">Rédige un texte (15 à 20 lignes environ) qui correspond à tes choix et qui contient <b>toutes</b> tes contraintes, de façon repérable — c'est ce que tu devras prouver pendant le match.</div>
       </div>
     </div>
     <div class="etape">
-      <div class="etape-num" style="background:var(--blue)">4</div>
+      <div class="etape-num" style="background:var(--blue)">6</div>
       <div class="etape-body">
         <div class="etape-title">🖼️ Ajoute une illustration</div>
         <div class="etape-desc">Elle apparaît au dos de ta carte, avec ton nom, ta classe, ta séquence et le type de texte choisi.</div>
       </div>
     </div>
     <div class="etape">
-      <div class="etape-num" style="background:var(--red)">5</div>
+      <div class="etape-num" style="background:var(--red)">7</div>
       <div class="etape-body">
         <div class="etape-title">✉️ Envoie ta carte</div>
         <div class="etape-desc">Ton/ta professeur·e la reçoit dans le deck de classe, la lit, et la valide (ou te demande de la retravailler avec un petit mot d'explication).</div>
       </div>
     </div>
 
-    <div class="panel-title" style="margin-top:22px">🃏 Recto / Verso — comment lire une carte LÉXICA</div>
+    <div class="panel-title" style="margin-top:22px">🃏 Recto / Verso — comment lire une carte LEXICA</div>
     <div class="form-row cols-2">
       <div style="background:rgba(255,255,255,.04);border:1px solid rgba(201,150,58,.25);border-radius:8px;padding:14px">
         <div style="font-weight:700;color:var(--gold-lt);margin-bottom:6px">📄 FACE (recto) — le texte</div>
@@ -278,6 +292,7 @@ textarea{resize:vertical;line-height:1.55}
       </div>
     </div>
     <p style="font-size:.78rem;color:var(--silver-lt);margin-top:10px;font-style:italic">Le barème détaillé est rappelé dans l'onglet 🏆 Match.</p>
+    <p style="font-size:.83rem;color:var(--silver-lt);line-height:1.6;margin-top:10px">Chaque carte validée reçoit un <b style="color:var(--gold-lt)">numéro</b>. Pendant le match, le jury tape ce numéro dans l'onglet 🏆 Match pour afficher le texte et attribuer les points contrainte par contrainte — projeté au tableau, toute la classe suit en même temps.</p>
 
     <div class="panel-title" style="margin-top:22px">🎲 Le tirage aléatoire, à quoi ça sert ?</div>
     <p style="font-size:.83rem;color:var(--silver-lt);line-height:1.6">Ton/ta professeur·e peut tirer au sort des contraintes surprises (avec la roue ou un tirage instantané) pour un défi flash à l'oral, ou imprimer des cartes-jury pour vérifier les réponses pendant le match.</p>
@@ -308,14 +323,60 @@ textarea{resize:vertical;line-height:1.55}
     </div>
     <div class="form-row cols-2">
       <div class="form-group"><label>Titre de la carte</label><input type="text" id="e-titre" placeholder="Nom de ton héros, poème, personnage…" oninput="updatePreview()"></div>
+    </div>
+    <div class="form-row cols-3">
+      <div class="form-group"><label>Genre</label>
+        <select id="e-genre" onchange="updatePreview()">
+          <option value="">— Choisir —</option>
+          <option>Conte</option>
+          <option>Fable</option>
+          <option>Roman de chevalerie</option>
+          <option>Roman d'aventure</option>
+          <option>Théâtre (comédie)</option>
+          <option>Poésie</option>
+          <option>Autoportrait / autobiographie</option>
+          <option>Nouvelle</option>
+          <option>Lettre</option>
+        </select>
+      </div>
       <div class="form-group"><label>Type de texte</label>
         <select id="e-type" onchange="updatePreview()">
           <option value="">— Choisir —</option>
-          <option>Portrait narratif</option><option>Poème</option><option>Scène théâtrale</option>
-          <option>Fable</option><option>Monologue intérieur</option><option>Conte</option>
+          <option value="Narratif">Narratif (raconter)</option>
+          <option value="Descriptif">Descriptif (décrire, peindre)</option>
+          <option value="Explicatif">Explicatif (expliquer, informer)</option>
+          <option value="Argumentatif">Argumentatif (convaincre)</option>
+          <option value="Injonctif">Injonctif (donner des ordres/consignes)</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Registre</label>
+        <select id="e-registre" onchange="updatePreview()">
+          <option value="">— Choisir —</option>
+          <option>Comique</option>
+          <option>Tragique</option>
+          <option>Épique</option>
+          <option>Lyrique</option>
+          <option>Pathétique</option>
+          <option>Fantastique</option>
+          <option>Merveilleux</option>
+          <option>Ironique</option>
         </select>
       </div>
     </div>
+    <p style="font-size:.72rem;color:var(--silver-lt);margin-top:2px">Ces trois choix sont indépendants — à toi de voir lesquels s'appliquent à ton texte. Ça t'aide à comprendre que genre, type de texte et registre sont trois choses différentes !</p>
+  </div>
+
+  <!-- TEMPS DOMINANT -->
+  <div class="panel">
+    <div class="panel-title">⏳ Temps dominant <span class="sub">Obligatoire</span></div>
+    <p style="font-size:.8rem;color:var(--silver-lt);margin-bottom:12px">Ton texte est-il plutôt écrit au présent (discours) ou raconté au passé (récit) ?</p>
+    <div class="niveau-selector">
+      <label class="niveau-opt" data-n="1" style="flex:1"><input type="radio" name="temps" value="discours" onchange="updateTemps('discours')">
+        <div class="niveau-card-ui"><div style="font-size:1.6rem">🗣️</div><div class="niveau-info">Discours<br><b>Présent dominant</b></div></div></label>
+      <label class="niveau-opt" data-n="3" style="flex:1"><input type="radio" name="temps" value="recit" onchange="updateTemps('recit')">
+        <div class="niveau-card-ui"><div style="font-size:1.6rem">📖</div><div class="niveau-info">Récit<br><b>Passé simple / imparfait</b></div></div></label>
+    </div>
+    <div id="temps-warning" style="margin-top:10px;font-size:.8rem;line-height:1.4"></div>
   </div>
 
   <!-- THÈMES -->
@@ -440,6 +501,18 @@ textarea{resize:vertical;line-height:1.55}
       </div>
     </div>
 
+    <div class="panel-title" style="margin-top:20px;margin-bottom:8px">🔎 Correction de carte en direct
+      <span class="sub"><button class="btn btn-purple btn-sm" onclick="toggleCorrectionProjection()">📺 Projeter au tableau</button></span>
+    </div>
+    <div id="correction-idle" class="form-row cols-3">
+      <div class="form-group"><label>N° de carte</label><input type="text" id="corr-numero" placeholder="Ex : 12" onkeydown="if(event.key==='Enter')loadCorrection()"></div>
+      <div class="form-group"><label>Équipe qui lit</label>
+        <select id="corr-team"><option value="a">Équipe A</option><option value="b">Équipe B</option></select>
+      </div>
+      <div class="form-group" style="justify-content:flex-end"><button class="btn btn-primary" onclick="loadCorrection()">📇 Charger la carte</button></div>
+    </div>
+    <div id="correction-active" style="display:none"></div>
+
     <div class="panel-title" style="margin-bottom:8px">📜 Journal de partie</div>
     <div class="score-log" id="score-log"><div style="opacity:.5;font-style:italic">Aucune action…</div></div>
 
@@ -523,7 +596,7 @@ textarea{resize:vertical;line-height:1.55}
     </select>
   </div>
   <div class="fiche-projet" id="fiche-print-area">
-    <h2>⚔️ LÉXICA — Fiche de création de carte</h2>
+    <h2>⚔️ LEXICA — Fiche de création de carte</h2>
     <div class="form-row cols-3" style="margin-bottom:0">
       <div class="fiche-field"><label>Nom / Prénom</label><input class="fiche-input" id="f-auteur" placeholder="…"></div>
       <div class="fiche-field"><label>Classe</label><input class="fiche-input" id="f-classe" placeholder="…"></div>
@@ -586,7 +659,7 @@ textarea{resize:vertical;line-height:1.55}
           <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;cursor:pointer"><input type="checkbox"> Texte recopié proprement</label>
           <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;cursor:pointer"><input type="checkbox"> Illustration réalisée</label>
           <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;cursor:pointer"><input type="checkbox"> Nom + classe inscrits</label>
-          <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;cursor:pointer"><input type="checkbox"> Carte saisie dans LÉXICA</label>
+          <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;cursor:pointer"><input type="checkbox"> Carte saisie dans LEXICA</label>
         </div>
       </div>
     </div>
@@ -633,7 +706,7 @@ textarea{resize:vertical;line-height:1.55}
         <input type="password" id="prof-pwd" placeholder="•••••••" onkeydown="if(event.key==='Enter')checkPwd()">
       </div>
       <button class="btn btn-primary" onclick="checkPwd()">Entrer</button>
-      <p style="font-size:.72rem;color:var(--silver-lt);margin-top:10px">Par défaut : <code style="color:var(--gold-lt)">lexica2026</code> (modifiable : variable PROF_PWD)</p>
+      <p style="font-size:.72rem;color:var(--silver-lt);margin-top:10px">Accès réservé au/à la professeur·e.</p>
     </div>
   </div>
   <div id="prof-content" style="display:none">
@@ -681,7 +754,7 @@ textarea{resize:vertical;line-height:1.55}
 
 <!-- PROJECTION -->
 <div class="projection-overlay" id="projection-overlay">
-  <button class="proj-close" onclick="toggleProjection()">✕</button>
+  <button class="proj-close" onclick="closeProjection()">✕</button>
   <div id="projection-content"></div>
 </div>
 
@@ -691,7 +764,13 @@ textarea{resize:vertical;line-height:1.55}
 // ══════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════
-const PROF_PWD = 'lexica2026';
+// Mot de passe prof stocké en hash SHA-256 (jamais en clair dans le code source,
+// même en ouvrant la console ou l'inspecteur les élèves ne peuvent pas le lire).
+const PROF_PWD_HASH = '6d616e5b5db229bffa547956723a9f088c63f8782438a5712cf7321ba462aa04';
+async function sha256Hex(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
 
 // ══════════════════════════════════════════════════════
 // FIREBASE — deck partagé en temps réel entre tous les postes
@@ -705,11 +784,13 @@ const firebaseConfig = {
   messagingSenderId: "3644116964",
   appId: "1:3644116964:web:5ae47e4211bb5603c301f1"
 };
-firebase.initializeApp(firebaseConfig);
-const fbAuth = firebase.auth();
-const fbDB = firebase.database();
+let fbAuth = null, fbDB = null, firebaseOK = false;
 let fbReady = false; // devient true une fois connecté et le premier snapshot reçu
 
+function requireFirebase(){
+  if(!fbDB){toast('⚠️ Service en ligne indisponible pour le moment — réessaie plus tard',true);return false;}
+  return true;
+}
 function refreshActiveView(){
   const activeView = document.querySelector('.view.active');
   if(!activeView)return;
@@ -738,23 +819,36 @@ function migrateLocalDeckOnce(){
   }
 }
 
-fbAuth.onAuthStateChanged(user=>{
-  if(!user)return;
-  migrateLocalDeckOnce();
-  fbDB.ref('cards').on('value', snapshot=>{
-    const data = snapshot.val() || {};
-    deck = Object.values(data);
-    fbReady = true;
-    refreshActiveView();
-  }, err=>{
-    console.error('Firebase deck sync error', err);
-    toast('⚠️ Synchronisation impossible — vérifie ta connexion', true);
+// Tout le bloc Firebase est protégé : si le SDK ne charge pas (réseau d'établissement qui
+// bloque gstatic.com, coupure internet…), le reste de LEXICA (créer/prévisualiser une carte)
+// continue de fonctionner en local ; seul l'envoi/la synchronisation seront indisponibles.
+try{
+  if(typeof firebase === 'undefined') throw new Error('SDK Firebase non chargé');
+  firebase.initializeApp(firebaseConfig);
+  fbAuth = firebase.auth();
+  fbDB = firebase.database();
+  fbAuth.onAuthStateChanged(user=>{
+    if(!user)return;
+    firebaseOK = true;
+    migrateLocalDeckOnce();
+    fbDB.ref('cards').on('value', snapshot=>{
+      const data = snapshot.val() || {};
+      deck = Object.values(data);
+      fbReady = true;
+      refreshActiveView();
+    }, err=>{
+      console.error('Firebase deck sync error', err);
+      toast('⚠️ Synchronisation impossible — vérifie ta connexion', true);
+    });
   });
-});
-fbAuth.signInAnonymously().catch(err=>{
-  console.error('Firebase auth error', err);
-  toast('⚠️ Connexion au serveur impossible — mode hors-ligne', true);
-});
+  fbAuth.signInAnonymously().catch(err=>{
+    console.error('Firebase auth error', err);
+    toast('⚠️ Connexion au serveur impossible — mode hors-ligne', true);
+  });
+}catch(err){
+  console.error('Firebase indisponible — LEXICA fonctionne en mode local uniquement', err);
+  setTimeout(()=>toast('⚠️ Service en ligne indisponible : création de carte possible, mais envoi/synchronisation désactivés', true), 600);
+}
 
 // ══════════════════════════════════════════════════════
 // BASE DE CONTRAINTES
@@ -801,6 +895,7 @@ let manches = JSON.parse(localStorage.getItem('lexica_manches')||'[]');
 let illustrationData=null, currentNiveau=0, tirageCount=3;
 let tirageHistory = JSON.parse(localStorage.getItem('lexica_tirage_history')||'{}');
 let themes=[], contraintes=[];
+let tempsDominant=''; // 'discours' ou 'recit' — influence le niveau (voir renderContraintes)
 let wheelSpinning=false, wheelItems=[], wheelAngle=0, tirageResults=[], tirageRemaining=0;
 
 const C_TYPES = {
@@ -919,10 +1014,11 @@ function renderContraintes(){
   const entree=document.getElementById('e-entree').value;
   const cont=document.getElementById('contraintes-container');
   const addRow=document.getElementById('add-c-btn-row');
+  currentNiveau = Math.max(contraintes.length, tempsDominant==='recit'?2:0);
   if(!entree){
     cont.innerHTML='<p style="font-size:.82rem;color:var(--silver-lt);font-style:italic">Choisis d\'abord une séquence ci-dessus pour voir les contraintes possibles.</p>';
     addRow.innerHTML='';
-    currentNiveau=0;updateNiveauLabel();
+    updateNiveauLabel();
     return;
   }
   cont.innerHTML=contraintes.map((c,i)=>{
@@ -937,19 +1033,35 @@ function renderContraintes(){
       ${custom}
     </div>`;
   }).join('');
-  currentNiveau=contraintes.length;
   updateNiveauLabel();
   const labels=['+ Choisir ma 1ère contrainte','+ Ajouter une 2ᵉ contrainte (optionnel → Niveau 2)','+ Ajouter une 3ᵉ contrainte (optionnel → Niveau 3)'];
   addRow.innerHTML = contraintes.length<3
     ? `<button class="btn btn-secondary btn-sm" onclick="addContrainteSlot()">${labels[contraintes.length]}</button>`
     : `<p style="font-size:.78rem;color:var(--gold-lt)">✔️ Maximum de 3 contraintes atteint — ta carte sera Niveau 3 ★★★</p>`;
 }
+function updateTemps(val){
+  tempsDominant = val;
+  const w = document.getElementById('temps-warning');
+  if(val==='recit'){
+    w.innerHTML = '⚠️ Le temps du récit est une contrainte exigeante : ta carte passe automatiquement en <b style="color:var(--gold-lt)">Niveau ★★ minimum</b>, même sans contrainte supplémentaire. Attention : les erreurs de temps (passé simple / imparfait mal employés) seront <b style="color:#ff8899">fortement pénalisées</b> pendant le match.';
+  } else if(val==='discours'){
+    w.innerHTML = '<span style="color:var(--silver-lt)">Le présent domine ton texte (vérité générale, dialogue vivant, narration au présent…).</span>';
+  } else {
+    w.textContent='';
+  }
+  renderContraintes();
+  updatePreview();
+}
 function updateNiveauLabel(){
-  const n=contraintes.length;
+  const n=currentNiveau;
   const lbl=document.getElementById('niveau-live-label');
   if(!lbl)return;
   if(n===0){lbl.textContent='Aucune contrainte — carte non jouable';lbl.style.color='#ff8899';}
-  else{lbl.textContent=`${'★'.repeat(n)} Niveau ${n}`;lbl.style.color=n===1?'var(--bronze-lt)':n===2?'var(--silver-lt)':'var(--gold-lt)';}
+  else{
+    const via = (tempsDominant==='recit' && contraintes.length<2) ? ' (grâce au temps du récit)' : '';
+    lbl.textContent=`${'★'.repeat(n)} Niveau ${n}${via}`;
+    lbl.style.color=n===1?'var(--bronze-lt)':n===2?'var(--silver-lt)':'var(--gold-lt)';
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -984,7 +1096,10 @@ function getFormData(){
     classe:(document.getElementById('e-classe')?.value||'').trim(),
     entree:document.getElementById('e-entree')?.value||'',
     titre:(document.getElementById('e-titre')?.value||'').trim(),
+    genre:document.getElementById('e-genre')?.value||'',
     type:document.getElementById('e-type')?.value||'',
+    registre:document.getElementById('e-registre')?.value||'',
+    temps:tempsDominant,
     texte:(document.getElementById('e-texte')?.value||'').trim(),
     niveau:currentNiveau,
     themes:themes.map(t=>t.val).filter(Boolean),
@@ -1003,13 +1118,15 @@ function renderRecto(d){
   const titre=d.titre||'[ Titre ]';
   const texte=d.texte||'[ Ton texte apparaîtra ici… ]';
   const tr=texte.length>420?texte.substring(0,420)+'…':texte;
+  const tempsLabel = d.temps==='recit' ? '⏳ Récit (passé simple / imparfait)' : d.temps==='discours' ? '🗣️ Discours (présent)' : '';
+  const tempsTag = tempsLabel ? `<span class="prouver-tag" style="background:rgba(74,44,122,.18);color:#3a2260;border:1px solid #7a3a9a">${esc(tempsLabel)}</span>` : '';
   const cTags=d.contraintes.map(c=>`<span class="prouver-tag ${(C_TYPES[c.type]||C_TYPES.grammaire).ptcls}">${esc(c.val.substring(0,30))}</span>`).join('');
   const tTags=d.themes.map(t=>`<span class="theme-tag">${esc(t.substring(0,24))}</span>`).join('');
   el.innerHTML=`<div class="verso-header"><div class="verso-titre">${esc(titre)}</div>${starsHtml(d.niveau,'.82rem')}</div>
     <div class="verso-texte">${esc(tr)}</div>
     <div class="verso-prouver">
       <div class="verso-prouver-title">🎯 Contraintes à retrouver dans le texte :</div>
-      <div class="verso-prouver-tags">${cTags||'<span style="font-size:.6rem;color:rgba(26,26,46,.4);font-style:italic">Aucune contrainte choisie</span>'}</div>
+      <div class="verso-prouver-tags">${tempsTag}${cTags||(tempsTag?'':'<span style="font-size:.6rem;color:rgba(26,26,46,.4);font-style:italic">Aucune contrainte choisie</span>')}</div>
       ${tTags?`<div class="recto-themes" style="margin-top:4px">${tTags}</div>`:''}
     </div>`;
 }
@@ -1018,11 +1135,12 @@ function renderVerso(d){
   const el=document.getElementById('prev-verso');
   const titre=d.titre||'[ Titre ]';
   const illus=d.illustration?`<img src="${d.illustration}" alt="">`:`<div class="illus-ph">🖼️ Espace illustration</div>`;
+  const classif=[d.genre,d.type,d.registre].filter(Boolean).join(' · ')||'—';
   el.innerHTML=`<div class="recto-header"><div class="recto-titre">${esc(titre)}</div>${starsHtml(d.niveau)}</div>
     <div class="recto-illus">${illus}</div>
     <div class="recto-footer">
-      <div class="recto-meta-small"><span>${esc(d.type)||'—'}</span><span>${esc(d.entree)||'—'}</span></div>
-      <div class="recto-meta-small"><span>${esc(d.auteur)||'—'}</span><span>${esc(d.classe)||'—'}</span></div>
+      <div class="recto-meta-small"><span style="max-width:100%">${esc(classif)}</span></div>
+      <div class="recto-meta-small"><span>${esc(d.entree)||'—'}</span><span>${esc(d.auteur)||'—'} · ${esc(d.classe)||'—'}</span></div>
     </div>`;
 }
 function countChars(){
@@ -1042,10 +1160,12 @@ function submitCard(){
   if(!d.classe)return toast('⚠️ Entre ta classe',true);
   if(!d.titre)return toast('⚠️ Donne un titre',true);
   if(!d.entree)return toast('⚠️ Choisis une séquence',true);
+  if(!d.temps)return toast('⚠️ Choisis le temps dominant (discours ou récit)',true);
   if(!d.texte||d.texte.length<50)return toast('⚠️ Texte trop court !',true);
   if(!d.contraintes.length)return toast('⚠️ Choisis au moins 1 contrainte',true);
   const incomplete=contraintes.some(c=>!c.val||(c.val==='__custom__'&&!c.customVal));
   if(incomplete)return toast('⚠️ Termine de choisir/décrire chacune de tes contraintes',true);
+  if(!requireFirebase())return;
   const card={...d,id:Date.now()+'_'+Math.random().toString(36).substr(2,5),
     dateEnvoi:new Date().toLocaleDateString('fr-FR'),statut:'attente',commentaire:''};
   fbDB.ref('cards/'+card.id).set(card).then(()=>{
@@ -1058,8 +1178,11 @@ function submitCard(){
 function resetForm(){
   ['e-auteur','e-classe','e-titre','e-texte'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('e-entree').value='';document.getElementById('e-type').value='';
+  document.getElementById('e-genre').value='';document.getElementById('e-registre').value='';
   document.getElementById('e-entree-desc').textContent='';
-  currentNiveau=0;themes=[];contraintes=[];illustrationData=null;
+  document.querySelectorAll('input[name="temps"]').forEach(r=>r.checked=false);
+  document.getElementById('temps-warning').textContent='';
+  tempsDominant='';currentNiveau=0;themes=[];contraintes=[];illustrationData=null;
   removeImage();renderThemes();renderThemeSuggestions();renderContraintes();updatePreview();countChars();
 }
 
@@ -1118,6 +1241,146 @@ function renderHistorique(){
       <td style="padding:5px 8px;text-align:center;font-weight:700;color:var(--gold-lt)">${m.scoreA} — ${m.scoreB}</td>
       <td style="padding:5px 8px;color:#a0ffcc">${esc(m.winner)}</td>
     </tr>`).join('')}</tbody></table>`;
+}
+
+// ══════════════════════════════════════════════════════
+// CORRECTION DE CARTE EN DIRECT (avec numéro, projetable)
+// ══════════════════════════════════════════════════════
+let correctionState = null; // {card, team, contStatus:[], tempsStatus:null, bonus:{texte:false,oral:false}}
+
+function loadCorrection(){
+  const numRaw = document.getElementById('corr-numero').value.trim();
+  const num = parseInt(numRaw, 10);
+  if(!numRaw || isNaN(num)){toast('⚠️ Entre un numéro de carte valide',true);return;}
+  const card = deck.find(c=>c.numero===num);
+  if(!card){toast(`⚠️ Aucune carte validée n'a le numéro ${num}`,true);return;}
+  correctionState = {
+    card,
+    team: document.getElementById('corr-team').value,
+    contStatus: (card.contraintes||[]).map(()=>null), // null | 'ok' | 'non' | 'fausse'
+    tempsStatus: null, // null | 'ok' | 'erreur'
+    bonus: {texte:false, oral:false}
+  };
+  document.getElementById('correction-idle').style.display='none';
+  document.getElementById('correction-active').style.display='block';
+  renderCorrectionActive();
+  syncCorrectionProjection();
+}
+function ptsForContStatus(s){ return s==='ok'?3 : s==='fausse'?-2 : 0; }
+function ptsForTempsStatus(s){ return s==='erreur'?-2 : 0; }
+function computeCorrectionTotal(){
+  if(!correctionState)return 0;
+  let total = correctionState.contStatus.reduce((s,st)=>s+ptsForContStatus(st),0);
+  if(correctionState.card.temps==='recit') total += ptsForTempsStatus(correctionState.tempsStatus);
+  if(correctionState.bonus.texte) total += 3;
+  if(correctionState.bonus.oral) total += 3;
+  return total;
+}
+function setContStatus(i,status){
+  correctionState.contStatus[i] = correctionState.contStatus[i]===status ? null : status;
+  renderCorrectionActive(); syncCorrectionProjection();
+}
+function setTempsStatus(status){
+  correctionState.tempsStatus = correctionState.tempsStatus===status ? null : status;
+  renderCorrectionActive(); syncCorrectionProjection();
+}
+function toggleCorrBonus(key){
+  correctionState.bonus[key] = !correctionState.bonus[key];
+  renderCorrectionActive(); syncCorrectionProjection();
+}
+function correctionBodyHtml(forProjection){
+  const cs = correctionState;
+  const card = cs.card;
+  const teamName = document.getElementById('team-'+cs.team+'-name')?.value || (cs.team==='a'?'Équipe A':'Équipe B');
+  const btn = (label,active,onclick,color)=>`<button class="btn btn-sm" style="background:${active?color:'transparent'};border:1.5px solid ${color};color:${active?'#1a1a2e':color}" ${forProjection?'':`onclick="${onclick}"`}>${label}</button>`;
+  const contRows = (card.contraintes||[]).map((c,i)=>{
+    const st = cs.contStatus[i];
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:6px;margin-bottom:6px">
+      <span class="type-badge ${(C_TYPES[c.type]||C_TYPES.grammaire).cls}" style="flex-shrink:0">${esc(c.val)}</span>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
+        ${btn('✓ Trouvée +3',st==='ok',`setContStatus(${i},'ok')`,'#2d6a4f')}
+        ${btn('✗ Non trouvée',st==='non',`setContStatus(${i},'non')`,'#8a9bb0')}
+        ${btn('⚠️ Fausse −2',st==='fausse',`setContStatus(${i},'fausse')`,'#9b2335')}
+      </div>
+    </div>`;
+  }).join('') || '<p style="font-size:.8rem;color:var(--silver-lt);font-style:italic">Aucune contrainte sur cette carte.</p>';
+  const tempsRow = card.temps ? `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;background:rgba(74,44,122,.15);border-radius:6px;margin-bottom:6px;border:1px solid rgba(122,58,154,.4)">
+      <span style="font-size:.85rem;color:var(--gold-lt)">${card.temps==='recit'?'⏳ Temps du récit (passé simple / imparfait)':'🗣️ Temps du discours (présent)'}</span>
+      ${card.temps==='recit' ? `<div style="display:flex;gap:5px">
+        ${btn('✓ Respecté',cs.tempsStatus==='ok',`setTempsStatus('ok')`,'#2d6a4f')}
+        ${btn('⚠️ Erreurs −2',cs.tempsStatus==='erreur',`setTempsStatus('erreur')`,'#9b2335')}
+      </div>` : '<span style="font-size:.75rem;color:var(--silver-lt)">(rien à vérifier)</span>'}
+    </div>` : '';
+  const total = computeCorrectionTotal();
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <div><span style="color:var(--gold-lt);font-weight:700;font-size:1.1rem">N°${card.numero}</span> — <span style="font-family:var(--ff-serif);font-size:1.05rem">« ${esc(card.titre||'—')} »</span> ${starsHtml(card.niveau,'.85rem')}</div>
+      <div style="font-size:.85rem;color:var(--silver-lt)">Lu par <b style="color:var(--gold-lt)">${esc(teamName)}</b> · ${esc(card.entree)}</div>
+    </div>
+    <div style="font-size:.85rem;font-style:italic;color:var(--silver-lt);border-left:3px solid rgba(201,150,58,.4);padding-left:10px;margin-bottom:14px;max-height:120px;overflow:auto;white-space:pre-wrap">${esc(card.texte||'')}</div>
+    ${contRows}
+    ${tempsRow}
+    <div style="display:flex;gap:16px;margin:10px 0;flex-wrap:wrap">
+      <label style="display:flex;gap:6px;align-items:center;font-size:.85rem;cursor:${forProjection?'default':'pointer'}"><input type="checkbox" ${cs.bonus.texte?'checked':''} ${forProjection?'disabled':`onchange="toggleCorrBonus('texte')"`}> Meilleur texte (+3)</label>
+      <label style="display:flex;gap:6px;align-items:center;font-size:.85rem;cursor:${forProjection?'default':'pointer'}"><input type="checkbox" ${cs.bonus.oral?'checked':''} ${forProjection?'disabled':`onchange="toggleCorrBonus('oral')"`}> Meilleur oral (+3)</label>
+    </div>
+    <div style="text-align:center;margin-top:14px;padding:12px;background:rgba(201,150,58,.1);border-radius:8px;border:1px solid rgba(201,150,58,.4)">
+      <span style="font-size:.8rem;color:var(--silver-lt)">Total pour cette carte</span><br>
+      <span style="font-size:1.8rem;font-weight:700;color:${total>=0?'var(--gold-lt)':'#ff8899'}">${total>=0?'+':''}${total} pts</span>
+    </div>`;
+}
+function renderCorrectionActive(){
+  if(!correctionState)return;
+  const el = document.getElementById('correction-active');
+  el.innerHTML = correctionBodyHtml(false) + `
+    <div class="btn-row">
+      <button class="btn btn-safe" onclick="validerCorrection()">✅ Valider les points de cette carte</button>
+      <button class="btn btn-secondary" onclick="cancelCorrection()">↺ Annuler / carte suivante</button>
+    </div>`;
+}
+function validerCorrection(){
+  const cs = correctionState; if(!cs)return;
+  const teamName = document.getElementById('team-'+cs.team+'-name')?.value || (cs.team==='a'?'Équipe A':'Équipe B');
+  (cs.card.contraintes||[]).forEach((c,i)=>{
+    const st = cs.contStatus[i];
+    if(st==='ok') addPoints(cs.team,3,`N°${cs.card.numero} — ${c.val} validée`);
+    else if(st==='fausse') addPoints(cs.team,-2,`N°${cs.card.numero} — ${c.val} annoncée mais fausse`);
+  });
+  if(cs.card.temps==='recit' && cs.tempsStatus==='erreur') addPoints(cs.team,-2,`N°${cs.card.numero} — erreur de temps du récit`);
+  if(cs.bonus.texte) addPoints(cs.team,3,`N°${cs.card.numero} — meilleur texte`);
+  if(cs.bonus.oral) addPoints(cs.team,3,`N°${cs.card.numero} — meilleur oral`);
+  toast(`✅ Points attribués pour la carte N°${cs.card.numero}`);
+  cancelCorrection();
+}
+function cancelCorrection(){
+  correctionState = null;
+  document.getElementById('corr-numero').value='';
+  document.getElementById('correction-active').style.display='none';
+  document.getElementById('correction-idle').style.display='grid';
+  if(projectionMode==='correction') renderProjectionCorrection();
+}
+function syncCorrectionProjection(){
+  if(projectionMode==='correction') renderProjectionCorrection();
+}
+function toggleCorrectionProjection(){
+  const overlay=document.getElementById('projection-overlay');
+  if(overlay.classList.contains('active') && projectionMode==='correction'){closeProjection();return;}
+  projectionMode='correction';
+  overlay.classList.add('active');
+  renderProjectionCorrection();
+}
+function renderProjectionCorrection(){
+  const content = document.getElementById('projection-content');
+  if(!correctionState){
+    content.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:80vh">
+      <div style="text-align:center">
+        <div style="font-size:3rem;margin-bottom:16px">🃏</div>
+        <div style="font-size:1.4rem;color:var(--silver-lt)">En attente d'une carte à corriger…</div>
+      </div>
+    </div>`;
+    return;
+  }
+  content.innerHTML = `<div style="max-width:900px;margin:0 auto;font-size:1.15rem">${correctionBodyHtml(true)}</div>`;
 }
 
 // ══════════════════════════════════════════════════════
@@ -1279,7 +1542,7 @@ function exportCarteJury(){
     let ty=H/2-(lines.length*9);
     lines.forEach(l=>{doc.text(l,W/2,ty,{align:'center'});ty+=10;});
     doc.setFontSize(7);doc.setTextColor(200,210,220);
-    doc.text('LÉXICA — Carte Jury',W/2,H-7,{align:'center'});
+    doc.text('LEXICA — Carte Jury',W/2,H-7,{align:'center'});
   });
   doc.save('lexica_cartes_jury.pdf');
   toast(`🖨️ ${picked.length} cartes jury générées`);
@@ -1376,13 +1639,23 @@ function toggleSeq(idx){
   const body=document.getElementById('prog-body-'+idx);body.classList.toggle('open');
   body.previousElementSibling.querySelector('.prog-toggle').textContent=body.classList.contains('open')?'Réduire':'Voir';
 }
+let projectionMode = null; // 'progression' | 'correction' | null
+function closeProjection(){
+  document.getElementById('projection-overlay').classList.remove('active');
+  projectionMode = null;
+}
 function toggleProjection(){
-  const overlay=document.getElementById('projection-overlay');overlay.classList.toggle('active');
-  if(overlay.classList.contains('active')){
+  const overlay=document.getElementById('projection-overlay');
+  if(overlay.classList.contains('active') && projectionMode==='progression'){closeProjection();return;}
+  projectionMode='progression';
+  overlay.classList.add('active');
+  renderProjectionProgression();
+}
+function renderProjectionProgression(){
     const data=computeProgression();
     const entrees=Object.keys(ENTREE_FULL).filter(e=>data[e]);
     document.getElementById('projection-content').innerHTML=`
-      <h1 style="text-align:center;font-family:var(--ff-serif);font-size:2.2rem;color:var(--gold-lt);margin-bottom:24px">⚔️ LÉXICA — Ce que la classe a réellement travaillé</h1>
+      <h1 style="text-align:center;font-family:var(--ff-serif);font-size:2.2rem;color:var(--gold-lt);margin-bottom:24px">⚔️ LEXICA — Ce que la classe a réellement travaillé</h1>
       ${!entrees.length?'<p style="text-align:center;color:#aaa">Aucune carte envoyée pour l\'instant.</p>':`
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px">
         ${entrees.map(entree=>{
@@ -1399,14 +1672,15 @@ function toggleProjection(){
           </div>`;
         }).join('')}
       </div>`}`;
-  }
 }
 
 // ══════════════════════════════════════════════════════
 // PROF
 // ══════════════════════════════════════════════════════
-function checkPwd(){
-  if(document.getElementById('prof-pwd').value===PROF_PWD){
+async function checkPwd(){
+  const entered = document.getElementById('prof-pwd').value;
+  const hash = await sha256Hex(entered);
+  if(hash===PROF_PWD_HASH){
     document.getElementById('prof-auth-panel').style.display='none';
     document.getElementById('prof-content').style.display='block';
     renderDeck();updateClasseFilters();
@@ -1440,10 +1714,11 @@ function renderDeck(){
     const cTags=(card.contraintes||[]).map(c=>`<span class="type-badge ${(C_TYPES[c.type]||C_TYPES.grammaire).cls}">${esc(c.val.substring(0,24))}</span>`).join('');
     const tTags=(card.themes||[]).map(t=>`<span class="theme-tag">${esc(t.substring(0,24))}</span>`).join('');
     return `<div class="dcw">
-      <div class="dch"><div class="dcn">«&nbsp;${esc(card.titre||'—')}&nbsp;»</div><span class="status-badge ${sCls}">${sLbl}</span></div>
+      <div class="dch"><div class="dcn">${card.numero?`<span style="color:var(--gold-lt)">N°${card.numero}</span> — `:''}«&nbsp;${esc(card.titre||'—')}&nbsp;»</div><span class="status-badge ${sCls}">${sLbl}</span></div>
       <div class="dc-meta">
         <span>👤 ${esc(card.auteur)} · 🏫 ${esc(card.classe)} · 📅 ${card.dateEnvoi}</span>
-        <span style="color:${nCol}">${'★'.repeat(card.niveau||2)} N${card.niveau||2} · ${esc(card.entree)} · ${esc(card.type)}</span>
+        <span style="color:${nCol}">${'★'.repeat(card.niveau||2)} N${card.niveau||2} · ${esc(card.entree)}</span>
+        <span>${[card.genre,card.type,card.registre].filter(Boolean).map(esc).join(' · ')||'—'}${card.temps?` · ${card.temps==='recit'?'⏳ Récit':'🗣️ Discours'}`:''}</span>
       </div>
       ${tTags?`<div style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:5px">${tTags}</div>`:''}
       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px">${cTags}</div>
@@ -1463,18 +1738,28 @@ function renderDeck(){
     </div>`;
   }).join('');
 }
+function nextCardNumero(){
+  const nums=deck.map(c=>c.numero).filter(n=>typeof n==='number' && !isNaN(n));
+  return nums.length ? Math.max(...nums)+1 : 1;
+}
 function validerCarte(id){
-  fbDB.ref('cards/'+id).update({statut:'validee',commentaire:''})
-    .then(()=>toast('✅ Carte validée !'))
+  if(!requireFirebase())return;
+  const card=deck.find(c=>c.id===id);
+  const updates={statut:'validee',commentaire:''};
+  if(!card || !card.numero) updates.numero = nextCardNumero();
+  fbDB.ref('cards/'+id).update(updates)
+    .then(()=>toast(`✅ Carte validée !${updates.numero?` N°${updates.numero}`:''}`))
     .catch(()=>toast('⚠️ Action impossible — vérifie ta connexion',true));
 }
 function rejeterCarte(id){
+  if(!requireFirebase())return;
   const t=document.getElementById('comm-txt-'+id)?.value||'';
   fbDB.ref('cards/'+id).update({statut:'rejetee',commentaire:t})
     .then(()=>toast('↩ Renvoyée à l\'élève'))
     .catch(()=>toast('⚠️ Action impossible — vérifie ta connexion',true));
 }
 function supprimerCarte(id){
+  if(!requireFirebase())return;
   if(!confirm('Supprimer définitivement cette carte ?'))return;
   fbDB.ref('cards/'+id).remove()
     .then(()=>toast('🗑️ Supprimée'))
@@ -1484,9 +1769,11 @@ function toggleComm(id){document.getElementById('comm-'+id)?.classList.toggle('o
 function previewCard(id){
   const c=deck.find(c=>c.id===id);if(!c)return;
   const w=window.open('','_blank','width=860,height=460');
+  const classif=[c.genre,c.type,c.registre].filter(Boolean).join(' · ')||'—';
+  const tempsLbl = c.temps==='recit' ? '⏳ Récit (passé simple/imparfait)' : c.temps==='discours' ? '🗣️ Discours (présent)' : '';
   w.document.write(`<html><body style="font-family:Georgia,serif;background:#f7f3e9;color:#1a1a2e;padding:24px">
-    <h2>«&nbsp;${c.titre}&nbsp;» — ${c.auteur} (${c.classe})</h2>
-    <p style="color:#888;font-size:.85rem">${'★'.repeat(c.niveau||2)} · ${c.entree} · ${c.type} · ${c.dateEnvoi}</p>
+    <h2>${c.numero?`N°${c.numero} — `:''}«&nbsp;${c.titre}&nbsp;» — ${c.auteur} (${c.classe})</h2>
+    <p style="color:#888;font-size:.85rem">${'★'.repeat(c.niveau||2)} · ${c.entree} · ${classif}${tempsLbl?' · '+tempsLbl:''} · ${c.dateEnvoi}</p>
     ${(c.themes||[]).length?`<p style="font-size:.82rem;color:#5a1a9a"><b>Thèmes :</b> ${c.themes.join(' · ')}</p>`:''}
     <hr style="border-color:#c9963a44;margin:12px 0">
     <pre style="white-space:pre-wrap;line-height:1.7;font-family:Georgia,serif;font-size:.95rem">${c.texte}</pre>
@@ -1520,7 +1807,7 @@ function exportPDF(){
         doc.setDrawColor(...nc);doc.setLineWidth(1.2);doc.rect(.6,.6,W-1.2,H-1.2);
         doc.setDrawColor(26,26,46);doc.setLineWidth(.4);doc.line(2,12,W-2,12);
         doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(26,26,46);
-        doc.text((card.titre||'').substring(0,34),4,8);
+        doc.text((card.numero?`N°${card.numero} — `:'')+(card.titre||'').substring(0,30),4,8);
         doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...nc);
         doc.text(stars,W-4,8,{align:'right'});
         doc.setFont('helvetica','normal');doc.setFontSize(6.2);doc.setTextColor(26,26,46);
@@ -1530,11 +1817,11 @@ function exportPDF(){
         doc.setFillColor(235,230,215);doc.rect(2,py,W-4,21,'F');
         doc.setDrawColor(...nc);doc.setLineWidth(.5);doc.rect(2,py,W-4,21);
         doc.setFont('helvetica','bold');doc.setFontSize(5.8);doc.setTextColor(...nc);
-        doc.text('🎯 CONTRAINTES À RETROUVER :',4,py+4.5);
+        doc.text('CONTRAINTES A RETROUVER :'+(card.temps?`  (temps : ${card.temps==='recit'?'recit':'discours'})`:''),4,py+4.5);
         doc.setFont('helvetica','normal');doc.setFontSize(5.5);doc.setTextColor(26,26,46);
         (card.contraintes||[]).forEach((ct,i)=>{
           const col2x=i%2===0?4:W/2+2;const row2=Math.floor(i/2);
-          const lbl=`${ct.type==='grammaire'?'📐':ct.type==='lexique'?'📚':ct.type==='conjugaison'?'🔵':'✏️'} ${ct.val}`;
+          const lbl=`${ct.type==='grammaire'?'[G]':ct.type==='lexique'?'[L]':ct.type==='conjugaison'?'[C]':'[?]'} ${ct.val}`;
           const ls=doc.splitTextToSize(lbl,(W-10)/2);
           if(row2<2)doc.text(ls[0]||'',col2x,py+9+row2*5.5);
         });
@@ -1544,7 +1831,7 @@ function exportPDF(){
         doc.setDrawColor(...nc);doc.setLineWidth(1.2);doc.rect(.6,.6,W-1.2,H-1.2);
         doc.setDrawColor(26,26,46);doc.setLineWidth(.4);doc.line(2,14,W-2,14);
         doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.setTextColor(26,26,46);
-        doc.text((card.titre||'').substring(0,32),4,9);
+        doc.text((card.numero?`N°${card.numero} — `:'')+(card.titre||'').substring(0,28),4,9);
         doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...nc);
         doc.text(stars,W-4,9,{align:'right'});
         doc.setFillColor(237,232,216);doc.rect(2,15,W-4,H-40,'F');
@@ -1554,10 +1841,11 @@ function exportPDF(){
         (card.themes||[]).forEach(t=>{
           doc.setFontSize(5);doc.setTextColor(74,44,122);
           const tt=t.substring(0,22);
-          if(thx+doc.getTextWidth(tt)+4<W-4){doc.text('◆ '+tt,thx,H-18);thx+=doc.getTextWidth('◆ '+tt)+4;}
+          if(thx+doc.getTextWidth(tt)+4<W-4){doc.text('* '+tt,thx,H-18);thx+=doc.getTextWidth('* '+tt)+4;}
         });
         doc.setFontSize(5.5);doc.setTextColor(100,95,80);
-        doc.text(`${card.type||'—'} · ${card.entree||'—'}`,4,H-13);
+        const classif=[card.genre,card.type,card.registre].filter(Boolean).join(' · ')||'—';
+        doc.text(`${classif} · ${card.entree||'—'}`,4,H-13);
         doc.text(card.auteur||'—',4,H-4);
         doc.text(card.classe||'—',W-4,H-4,{align:'right'});
       });
@@ -1575,6 +1863,7 @@ function exportJSON(){
 function importJSON(){document.getElementById('json-import-input').click();}
 function doImportJSON(input){
   const file=input.files[0];if(!file)return;
+  if(!requireFirebase())return;
   const r=new FileReader();
   r.onload=e=>{
     try{
