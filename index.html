@@ -132,8 +132,14 @@ textarea{resize:vertical;line-height:1.55}
 .score-log{background:rgba(0,0,0,.3);border-radius:8px;padding:12px;max-height:180px;overflow-y:auto;font-size:.78rem;color:var(--silver-lt)}
 .log-entry{padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06)}
 /* TIRAGE */
-.wheel-canvas-wrap{position:relative;width:320px;height:320px;margin:0 auto}
-.wheel-pointer{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:1.8rem;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+.reel-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.reel-window{width:230px;height:64px;overflow:hidden;position:relative;border:3px solid var(--gold);border-radius:10px;background:var(--parch);box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.reel-window::before,.reel-window::after{content:'';position:absolute;left:0;right:0;height:18px;pointer-events:none;z-index:2}
+.reel-window::before{top:0;background:linear-gradient(rgba(247,243,233,1),rgba(247,243,233,0))}
+.reel-window::after{bottom:0;background:linear-gradient(rgba(247,243,233,0),rgba(247,243,233,1))}
+.reel-strip{position:absolute;left:0;right:0;top:0;will-change:transform}
+.reel-item{height:64px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;color:var(--ink);text-align:center;padding:0 12px;box-sizing:border-box;line-height:1.2}
+.reel-label{font-size:.72rem;color:var(--silver-lt);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
 .tirage-result-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:18px}
 .tr-card{border-radius:10px;padding:14px;text-align:center}
 .tr-cat{font-size:.68rem;font-weight:700;letter-spacing:.1em;margin-bottom:6px;text-transform:uppercase}
@@ -141,8 +147,8 @@ textarea{resize:vertical;line-height:1.55}
 .tr-gramm{background:rgba(45,106,79,.3);border:2px solid #52b788}
 .tr-lex{background:rgba(155,35,53,.3);border:2px solid #e07090}
 .tr-conj{background:rgba(26,58,106,.35);border:2px solid #6090e0}
-.tirage-checkbox{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem;padding:7px 14px;border-radius:20px;border:1.5px solid rgba(201,150,58,.3);transition:all .2s;user-select:none}
-.tirage-checkbox input{accent-color:var(--gold)}
+.tr-seq{background:rgba(201,150,58,.25);border:2px solid var(--gold)}
+.tr-autre{background:rgba(74,44,122,.3);border:2px solid #7a3a9a}
 /* FICHE */
 .fiche-projet{background:linear-gradient(135deg,var(--parch),var(--parch2));color:var(--ink);border-radius:10px;padding:24px;max-width:700px;margin:0 auto}
 .fiche-projet h2{font-family:var(--ff-serif);font-size:1.4rem;color:var(--purple);border-bottom:2px solid var(--gold);padding-bottom:8px;margin-bottom:16px}
@@ -524,59 +530,46 @@ textarea{resize:vertical;line-height:1.55}
 <!-- ════ VUE TIRAGE ════ -->
 <div class="view" id="view-tirage">
   <div class="panel">
-    <div class="panel-title">🎲 Tirage aléatoire de contraintes</div>
-    <div style="display:flex;gap:24px;flex-wrap:wrap">
-
-      <!-- Panneau options -->
-      <div style="flex:0 0 260px;min-width:220px">
-        <div style="font-size:.85rem;font-weight:700;color:var(--gold-lt);margin-bottom:8px">Séquence :</div>
-        <select class="deck-filter" id="tirage-entree" style="width:100%;margin-bottom:16px" onchange="renderPoids()">
-          <option value="">Toutes séquences</option>
-          <option value="Connaitre">🪞 Apprendre à se connaître</option>
-          <option value="Renart">🦊 Renart et ses ruses</option>
-          <option value="Perceval">⚔️ Perceval et la Table Ronde</option>
-          <option value="Cape">🗡️ De cape et de mots</option>
-          <option value="Poesie">🌍 Voyager en poésie</option>
-          <option value="Avare">🎭 L'Avare</option>
-        </select>
-        <div style="font-size:.85rem;font-weight:700;color:var(--gold-lt);margin-bottom:10px">Catégories :</div>
-        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
-          <label class="tirage-checkbox"><input type="checkbox" id="ck-gramm" checked onchange="renderPoids()"> 📐 Grammaire</label>
-          <label class="tirage-checkbox"><input type="checkbox" id="ck-lex" checked onchange="renderPoids()"> 📚 Lexique</label>
-          <label class="tirage-checkbox"><input type="checkbox" id="ck-conj" checked onchange="renderPoids()"> 🔵 Conjugaison</label>
-        </div>
-        <div style="font-size:.85rem;font-weight:700;color:var(--gold-lt);margin-bottom:10px">Nombre à tirer :</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px" id="tirage-count-btns">
-          <button class="btn btn-secondary btn-sm" onclick="setTirageCount(1,this)">1</button>
-          <button class="btn btn-secondary btn-sm" onclick="setTirageCount(2,this)">2</button>
-          <button class="btn btn-primary btn-sm" onclick="setTirageCount(3,this)">3</button>
-          <button class="btn btn-secondary btn-sm" onclick="setTirageCount(4,this)">4</button>
-          <button class="btn btn-secondary btn-sm" onclick="setTirageCount(5,this)">5</button>
-        </div>
-        <div class="btn-row" style="flex-direction:column;gap:8px;margin-top:0">
-          <button class="btn btn-primary" onclick="lancerRoue()">🎲 Lancer la roue !</button>
-          <button class="btn btn-secondary" onclick="tirageInstant()">⚡ Tirage direct</button>
-          <button class="btn btn-secondary" onclick="exportCarteJury()">🖨️ Cartes jury PDF</button>
-          <button class="btn btn-secondary btn-sm" onclick="resetPoids()">↺ Remettre poids à zéro</button>
-        </div>
+    <div class="panel-title">🎰 Tirage au sort</div>
+    <p style="font-size:.82rem;color:var(--silver-lt);margin-bottom:16px;line-height:1.5">
+      Le tirage ne pioche que dans ce que la classe a <b style="color:var(--gold-lt)">déjà réellement pratiqué</b> (d'après les cartes envoyées) — jamais dans toute la base. Si deux classes s'affrontent, seul ce qu'elles ont <b style="color:var(--gold-lt)">en commun</b> est tiré.
+    </p>
+    <div class="form-row cols-3">
+      <div class="form-group"><label>Classe</label>
+        <select class="deck-filter" id="tirage-classeA" onchange="renderPoidsClasse()"><option value="">— Choisir —</option></select>
       </div>
-
-      <!-- Roue -->
-      <div style="flex:1;min-width:300px;display:flex;flex-direction:column;align-items:center">
-        <div class="wheel-canvas-wrap">
-          <canvas id="wheel-canvas" width="320" height="320"></canvas>
-          <div class="wheel-pointer">▼</div>
+      <div class="form-group"><label>Classe adverse (optionnel)</label>
+        <select class="deck-filter" id="tirage-classeB" onchange="renderPoidsClasse()"><option value="">Aucune — une seule classe joue</option></select>
+      </div>
+      <div class="form-group"><label>Contraintes à tirer</label>
+        <div style="display:flex;gap:6px" id="tirage-n-btns">
+          <button class="btn btn-secondary btn-sm" onclick="setTirageN(1,this)">1</button>
+          <button class="btn btn-primary btn-sm" onclick="setTirageN(2,this)">2</button>
+          <button class="btn btn-secondary btn-sm" onclick="setTirageN(3,this)">3</button>
+          <button class="btn btn-secondary btn-sm" onclick="setTirageN(4,this)">4</button>
         </div>
-        <div id="tirage-current" style="margin-top:12px;font-size:.9rem;color:var(--gold-lt);text-align:center;min-height:28px;font-weight:700"></div>
       </div>
     </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="lancerTirageMachine()">🎰 Lancer le tirage !</button>
+      <button class="btn btn-secondary btn-sm" onclick="resetPoids()">↺ Remettre les poids à zéro</button>
+    </div>
+  </div>
 
-    <div id="tirage-result-cards" class="tirage-result-cards"></div>
-
-    <div style="margin-top:16px">
-      <div style="font-size:.82rem;font-weight:700;color:var(--silver-lt);margin-bottom:8px">📊 Poids des contraintes (plus une contrainte est tirée, moins elle a de chances de l'être à nouveau) :</div>
+  <div class="panel">
+    <div class="panel-title">🎯 Résultat du tirage</div>
+    <div id="reels-container" style="display:flex;gap:22px;flex-wrap:wrap;justify-content:center;padding:10px 0"></div>
+    <div id="tirage-result-summary" style="text-align:center;margin-top:6px;font-size:.95rem;color:var(--gold-lt);font-weight:700;min-height:24px"></div>
+    <div style="margin-top:18px">
+      <div style="font-size:.78rem;font-weight:700;color:var(--silver-lt);margin-bottom:8px">📊 Poids actuels du tirage pour cette sélection (plus un élément est tiré, moins il a de chances de ressortir) :</div>
       <div id="tirage-poids" style="display:flex;flex-wrap:wrap;gap:5px"></div>
     </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">🖨️ Cartes jury — référence complète</div>
+    <p style="font-size:.78rem;color:var(--silver-lt);margin-bottom:10px">Indépendant du tirage ci-dessus : génère des cartes imprimables de rappel avec des notions de toutes les séquences, pour le jury.</p>
+    <button class="btn btn-secondary" onclick="exportCarteJury()">🖨️ Générer les cartes jury (PDF)</button>
   </div>
 </div>
 
@@ -892,11 +885,10 @@ const DB = {
 let deck = []; // rempli en temps réel par Firebase (voir plus haut), plus par localStorage
 let scoreA=0, scoreB=0, scoreLogs=[];
 let manches = JSON.parse(localStorage.getItem('lexica_manches')||'[]');
-let illustrationData=null, currentNiveau=0, tirageCount=3;
+let illustrationData=null, currentNiveau=0;
 let tirageHistory = JSON.parse(localStorage.getItem('lexica_tirage_history')||'{}');
 let themes=[], contraintes=[];
 let tempsDominant=''; // 'discours' ou 'recit' — influence le niveau (voir renderContraintes)
-let wheelSpinning=false, wheelItems=[], wheelAngle=0, tirageResults=[], tirageRemaining=0;
 
 const C_TYPES = {
   grammaire:{label:'📐 Grammaire',cls:'tb-grammaire',ptcls:'pt-g'},
@@ -935,7 +927,7 @@ function setView(v){
   document.getElementById('btn-'+v).classList.add('active');
   if(v==='prof'){renderDeck();}
   if(v==='prog'){renderProg();}
-  if(v==='tirage'){renderPoids();setTimeout(()=>{wheelItems=getAllTirageItems().slice(0,16);drawWheel();},100);}
+  if(v==='tirage'){updateTirageClasseFilters();renderPoidsClasse();}
   if(v==='score'){renderHistorique();}
 }
 
@@ -1384,22 +1376,37 @@ function renderProjectionCorrection(){
 }
 
 // ══════════════════════════════════════════════════════
-// TIRAGE + ROUE
+// TIRAGE AU SORT — machine à sous, pool = ce que la/les classe(s) ont déjà pratiqué
 // ══════════════════════════════════════════════════════
-function getAllTirageItems(){
-  const entree=document.getElementById('tirage-entree')?.value||'';
-  const useG=document.getElementById('ck-gramm')?.checked;
-  const useL=document.getElementById('ck-lex')?.checked;
-  const useC=document.getElementById('ck-conj')?.checked;
-  const sources=entree&&DB[entree]?[DB[entree]]:Object.values(DB);
-  const seen=new Set();
-  const items=[];
-  sources.forEach(src=>{
-    if(useG&&src.grammaire)src.grammaire.forEach(v=>{const k='g|'+v;if(!seen.has(k)){seen.add(k);items.push({cat:'grammaire',val:v});}});
-    if(useL&&src.lexique)src.lexique.forEach(v=>{const k='l|'+v;if(!seen.has(k)){seen.add(k);items.push({cat:'lexique',val:v});}});
-    if(useC&&src.conjugaison)src.conjugaison.forEach(v=>{const k='c|'+v;if(!seen.has(k)){seen.add(k);items.push({cat:'conjugaison',val:v});}});
+let tirageN = 2; // nombre de contraintes à tirer
+
+function getClassPracticedData(classe){
+  // Séquences vues et contraintes précises déjà utilisées par une classe, d'après le deck réel.
+  const sequences = new Set();
+  const contraintes = new Map(); // key "type|val" -> {cat:type, val}
+  deck.forEach(card=>{
+    if(classe && card.classe!==classe) return;
+    if(card.entree) sequences.add(card.entree);
+    (card.contraintes||[]).forEach(c=>{
+      if(!c.val) return;
+      const key=(c.type||'autre')+'|'+c.val;
+      if(!contraintes.has(key)) contraintes.set(key,{cat:c.type||'autre', val:c.val});
+    });
   });
-  return items;
+  return {sequences, contraintes};
+}
+function getTiragePool(classeA, classeB){
+  const dataA = getClassPracticedData(classeA);
+  if(!classeB){
+    return {
+      sequences: [...dataA.sequences].map(s=>({cat:'sequence', val:s})),
+      contraintes: [...dataA.contraintes.values()]
+    };
+  }
+  const dataB = getClassPracticedData(classeB);
+  const seqCommon = [...dataA.sequences].filter(s=>dataB.sequences.has(s)).map(s=>({cat:'sequence', val:s}));
+  const contCommon = [...dataA.contraintes.keys()].filter(k=>dataB.contraintes.has(k)).map(k=>dataA.contraintes.get(k));
+  return {sequences:seqCommon, contraintes:contCommon};
 }
 function getWeight(item){const key=item.cat+'|'+item.val;return Math.max(1,10-(tirageHistory[key]||0)*2);}
 function pickWeighted(items,exclude=[]){
@@ -1410,112 +1417,146 @@ function pickWeighted(items,exclude=[]){
   for(const item of pool){r-=getWeight(item);if(r<=0)return item;}
   return pool[pool.length-1];
 }
-function setTirageCount(n,btn){
-  tirageCount=n;
-  document.querySelectorAll('#tirage-count-btns .btn').forEach(b=>b.className='btn btn-secondary btn-sm');
+function markDrawn(item){
+  const key=item.cat+'|'+item.val;
+  tirageHistory[key]=(tirageHistory[key]||0)+1;
+  localStorage.setItem('lexica_tirage_history',JSON.stringify(tirageHistory));
+}
+function setTirageN(n,btn){
+  tirageN=n;
+  document.querySelectorAll('#tirage-n-btns .btn').forEach(b=>b.className='btn btn-secondary btn-sm');
   if(btn)btn.className='btn btn-primary btn-sm';
 }
-function renderPoids(){
-  const items=getAllTirageItems();
-  const clrMap={grammaire:'#52b788',lexique:'#e07090',conjugaison:'#6090e0'};
-  document.getElementById('tirage-poids').innerHTML=items.slice(0,40).map(i=>{
+function currentClasseSelection(){
+  return {
+    a: document.getElementById('tirage-classeA')?.value||'',
+    b: document.getElementById('tirage-classeB')?.value||''
+  };
+}
+function renderPoidsClasse(){
+  const {a,b} = currentClasseSelection();
+  const wrap=document.getElementById('tirage-poids');
+  if(!a){wrap.innerHTML='<span style="font-size:.78rem;color:var(--silver-lt);font-style:italic">Choisis une classe pour voir ce qu\'elle a déjà pratiqué.</span>';return;}
+  const pool=getTiragePool(a,b);
+  const all=[...pool.sequences,...pool.contraintes];
+  if(!all.length){wrap.innerHTML='<span style="font-size:.78rem;color:var(--silver-lt);font-style:italic">Rien à tirer pour l\'instant : aucune carte envoyée '+(b?'en commun entre les deux classes':'par cette classe')+'.</span>';return;}
+  const clrMap={sequence:'#c9963a',grammaire:'#52b788',lexique:'#e07090',conjugaison:'#6090e0',autre:'#a080d0'};
+  wrap.innerHTML=all.map(i=>{
     const w=getWeight(i);
     const cnt=(tirageHistory[i.cat+'|'+i.val]||0);
-    return `<span title="Tiré ${cnt} fois — poids actuel : ${w}" style="font-size:.68rem;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,.06);border:1px solid ${clrMap[i.cat]}44;color:var(--silver-lt);cursor:default">${esc(i.val.substring(0,20))} <b style="color:${clrMap[i.cat]}">×${w}</b></span>`;
+    return `<span title="Tiré ${cnt} fois — poids actuel : ${w}" style="font-size:.68rem;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,.06);border:1px solid ${clrMap[i.cat]||'#888'}44;color:var(--silver-lt);cursor:default">${esc(i.val.substring(0,26))} <b style="color:${clrMap[i.cat]||'#888'}">×${w}</b></span>`;
   }).join('');
 }
-function resetPoids(){tirageHistory={};localStorage.setItem('lexica_tirage_history','{}');renderPoids();toast('↺ Poids réinitialisés');}
+function resetPoids(){tirageHistory={};localStorage.setItem('lexica_tirage_history','{}');renderPoidsClasse();toast('↺ Poids réinitialisés');}
 
-function drawWheel(highlightIdx=-1){
-  const canvas=document.getElementById('wheel-canvas');
-  if(!canvas)return;
-  const ctx=canvas.getContext('2d');
-  const cx=160,cy=160,r=148;
-  const items=wheelItems.length?wheelItems:getAllTirageItems().slice(0,16);
-  if(!items.length){ctx.clearRect(0,0,320,320);return;}
-  ctx.clearRect(0,0,320,320);
-  const palettes=['#2d6a4f','#4a2c7a','#9b2335','#1a3a6a','#7a6010','#4a3a2a','#1a5a3f','#5a1a9a','#7a1a2a','#1a2a5a','#5a4a10','#3a2a1a','#2a5a2a','#5a2a5a','#2a2a5a','#5a5a2a'];
-  const n=items.length;
-  const arc=(2*Math.PI)/n;
+function buildReelDom(container,id,label){
+  const wrap=document.createElement('div');
+  wrap.className='reel-wrap';
+  wrap.innerHTML=`<div class="reel-window"><div class="reel-strip" id="${id}"></div></div><div class="reel-label">${esc(label)}</div>`;
+  container.appendChild(wrap);
+  return wrap.querySelector('.reel-strip');
+}
+function renderReelsSkeleton(n){
+  const container=document.getElementById('reels-container');
+  container.innerHTML='';
+  document.getElementById('tirage-result-summary').textContent='';
+  const seqStrip=buildReelDom(container,'reel-seq','Séquence');
+  seqStrip.innerHTML='<div class="reel-item">?</div>';
+  const contStrips=[];
   for(let i=0;i<n;i++){
-    const start=wheelAngle+i*arc,end=start+arc;
-    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,end);ctx.closePath();
-    ctx.fillStyle=i===highlightIdx?'#f0d080':palettes[i%palettes.length];
-    ctx.fill();ctx.strokeStyle='#1a1a2e';ctx.lineWidth=1.5;ctx.stroke();
-    ctx.save();ctx.translate(cx,cy);ctx.rotate(start+arc/2);ctx.textAlign='right';
-    ctx.fillStyle=i===highlightIdx?'#1a1a2e':'#f7f3e9';
-    ctx.font=`bold ${Math.min(10,110/n)}px sans-serif`;
-    ctx.fillText(items[i].val.substring(0,17),r-8,4);
-    ctx.restore();
+    const s=buildReelDom(container,'reel-cont-'+i,'Contrainte '+(i+1));
+    s.innerHTML='<div class="reel-item">?</div>';
+    contStrips.push(s);
   }
-  ctx.beginPath();ctx.arc(cx,cy,20,0,2*Math.PI);ctx.fillStyle='#c9963a';ctx.fill();
-  ctx.fillStyle='#1a1a2e';ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText('⚔',cx,cy+4);
+  return {seqStrip, contStrips};
 }
+function spinReel(stripEl,labels,finalLabel,duration,delay){
+  return new Promise(resolve=>{
+    const itemH=64;
+    const pool = labels.length ? labels : [finalLabel];
+    const strip=[];
+    for(let i=0;i<4;i++){ pool.forEach(l=>strip.push(l)); }
+    strip.push(finalLabel);
+    stripEl.innerHTML=strip.map(l=>`<div class="reel-item">${esc(l)}</div>`).join('');
+    stripEl.style.transition='none';
+    stripEl.style.transform='translateY(0px)';
+    void stripEl.offsetHeight; // force reflow
+    const finalOffset=(strip.length-1)*itemH;
+    setTimeout(()=>{
+      stripEl.style.transition=`transform ${duration}ms cubic-bezier(.1,.7,.25,1)`;
+      stripEl.style.transform=`translateY(-${finalOffset}px)`;
+    },delay);
+    setTimeout(resolve,delay+duration+80);
+  });
+}
+async function lancerTirageMachine(){
+  const {a,b}=currentClasseSelection();
+  if(!a){toast('⚠️ Choisis au moins une classe',true);return;}
+  const pool=getTiragePool(a,b);
+  if(!pool.sequences.length){toast(`⚠️ ${b?'Ces deux classes n\'ont':'Cette classe n\'a'} encore rien en commun à tirer — envoyez d'abord des cartes.`,true);return;}
+  if(!pool.contraintes.length){toast('⚠️ Aucune contrainte pratiquée pour cette sélection',true);return;}
 
-function lancerRoue(){
-  if(wheelSpinning)return;
-  const items=getAllTirageItems();
-  if(!items.length){toast('⚠️ Aucune contrainte disponible',true);return;}
-  wheelItems=items.slice(0,Math.min(items.length,16));
-  tirageResults=[];tirageRemaining=tirageCount;
-  spinNext();
-}
-function spinNext(){
-  if(tirageRemaining<=0){showTirageResults();return;}
-  wheelSpinning=true;
-  const picked=pickWeighted(wheelItems,tirageResults.map(r=>r.val));
-  const idx=wheelItems.findIndex(i=>i.val===picked.val);
-  const n=wheelItems.length;
-  const arc=(2*Math.PI)/n;
-  const targetAngle=-(idx*arc+arc/2);
-  const spins=8+Math.random()*5;
-  const totalSpin=Math.PI*2*spins+(targetAngle-wheelAngle%(Math.PI*2));
-  const duration=3000+Math.random()*800;
-  const startAngle=wheelAngle,startTime=performance.now();
-  function animate(now){
-    const elapsed=now-startTime,progress=Math.min(elapsed/duration,1);
-    const ease=1-Math.pow(1-progress,4);
-    wheelAngle=startAngle+totalSpin*ease;
-    drawWheel();
-    document.getElementById('tirage-current').textContent=progress<1?'🎲 La roue tourne…':'';
-    if(progress<1){requestAnimationFrame(animate);}
-    else{
-      wheelSpinning=false;drawWheel(idx);
-      const key=picked.cat+'|'+picked.val;
-      tirageHistory[key]=(tirageHistory[key]||0)+1;
-      localStorage.setItem('lexica_tirage_history',JSON.stringify(tirageHistory));
-      tirageResults.push(picked);tirageRemaining--;
-      renderPoids();
-      document.getElementById('tirage-current').textContent=`✅ ${picked.val}`;
-      if(tirageRemaining>0)setTimeout(spinNext,2000);
-      else{document.getElementById('tirage-current').textContent='✅ Tirage terminé !';showTirageResults();}
-    }
+  const seqChoice=pickWeighted(pool.sequences);
+  const availableCont=[...pool.contraintes];
+  const contPicked=[];
+  const n=Math.min(tirageN, availableCont.length);
+  for(let i=0;i<n;i++){
+    const picked=pickWeighted(availableCont, contPicked.map(c=>c.val));
+    contPicked.push(picked);
+    const idx=availableCont.findIndex(c=>c.val===picked.val && c.cat===picked.cat);
+    if(idx>-1)availableCont.splice(idx,1);
   }
-  requestAnimationFrame(animate);
-}
-function tirageInstant(){
-  const items=getAllTirageItems();
-  if(!items.length){toast('⚠️ Aucune contrainte disponible',true);return;}
-  tirageResults=[];
-  for(let i=0;i<tirageCount;i++){
-    const picked=pickWeighted(items,tirageResults.map(r=>r.val));
-    const key=picked.cat+'|'+picked.val;
-    tirageHistory[key]=(tirageHistory[key]||0)+1;
-    tirageResults.push(picked);
+
+  const {seqStrip,contStrips}=renderReelsSkeleton(n);
+  const seqLabels=pool.sequences.map(s=>ENTREE_FULL[s.val]?ENTREE_FULL[s.val].replace(/^[^\s]+\s/,''):s.val);
+  await spinReel(seqStrip, seqLabels, ENTREE_FULL[seqChoice.val]?ENTREE_FULL[seqChoice.val].replace(/^[^\s]+\s/,''):seqChoice.val, 2400, 0);
+  markDrawn(seqChoice);
+  renderPoidsClasse();
+
+  for(let i=0;i<n;i++){
+    const contLabels=pool.contraintes.map(c=>c.val);
+    await spinReel(contStrips[i], contLabels, contPicked[i].val, 2200, 250);
+    markDrawn(contPicked[i]);
+    renderPoidsClasse();
   }
-  localStorage.setItem('lexica_tirage_history',JSON.stringify(tirageHistory));
-  renderPoids();showTirageResults();
-  document.getElementById('tirage-current').textContent='✅ Tirage instantané !';
+
+  const seqFull = ENTREE_FULL[seqChoice.val] || seqChoice.val;
+  document.getElementById('tirage-result-summary').innerHTML =
+    `✅ Séquence : ${esc(seqFull)} — ${contPicked.length} contrainte(s) tirée(s)`;
+  showTirageResultsMachine(seqChoice, contPicked);
 }
-function showTirageResults(){
-  const catInfo={grammaire:{label:'📐 GRAMMAIRE',cls:'tr-gramm'},lexique:{label:'📚 LEXIQUE',cls:'tr-lex'},conjugaison:{label:'🔵 CONJUGAISON',cls:'tr-conj'}};
-  document.getElementById('tirage-result-cards').innerHTML=tirageResults.map(r=>{
-    const ci=catInfo[r.cat]||catInfo.grammaire;
-    return `<div class="tr-card ${ci.cls}"><div class="tr-cat">${ci.label}</div><div class="tr-val">${esc(r.val)}</div></div>`;
+function showTirageResultsMachine(seqChoice, contPicked){
+  const catInfo={grammaire:{label:'📐 GRAMMAIRE',cls:'tr-gramm'},lexique:{label:'📚 LEXIQUE',cls:'tr-lex'},conjugaison:{label:'🔵 CONJUGAISON',cls:'tr-conj'},autre:{label:'✏️ AUTRE',cls:'tr-autre'},sequence:{label:'🧭 SÉQUENCE',cls:'tr-seq'}};
+  const all=[seqChoice,...contPicked];
+  const container=document.getElementById('reels-container');
+  const existingCards=document.getElementById('tirage-result-cards');
+  if(existingCards)existingCards.remove();
+  const cardsDiv=document.createElement('div');
+  cardsDiv.id='tirage-result-cards';
+  cardsDiv.className='tirage-result-cards';
+  cardsDiv.innerHTML=all.map(r=>{
+    const ci=catInfo[r.cat]||catInfo.autre;
+    const label = r.cat==='sequence' ? (ENTREE_FULL[r.val]||r.val) : r.val;
+    return `<div class="tr-card ${ci.cls}"><div class="tr-cat">${ci.label}</div><div class="tr-val">${esc(label)}</div></div>`;
   }).join('');
+  container.insertAdjacentElement('afterend',cardsDiv);
+}
+function getAllDbItems(){
+  // Toutes les notions de la base, toutes séquences confondues (pour les cartes jury de référence).
+  const seen=new Set();
+  const items=[];
+  Object.values(DB).forEach(src=>{
+    ['grammaire','lexique','conjugaison'].forEach(k=>{
+      (src[k]||[]).forEach(v=>{
+        const key=k+'|'+v;
+        if(!seen.has(key)){seen.add(key);items.push({cat:k,val:v});}
+      });
+    });
+  });
+  return items;
 }
 function exportCarteJury(){
-  const items=getAllTirageItems();
+  const items=getAllDbItems();
   if(!items.length){toast('⚠️ Aucune contrainte disponible',true);return;}
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a6'});
@@ -1530,19 +1571,15 @@ function exportCarteJury(){
     if(idx>0)doc.addPage();
     const col=catCol[item.cat]||catCol.grammaire;
     doc.setFillColor(...col);doc.rect(0,0,W,H,'F');
-    doc.setFillColor(255,255,255);doc.setGState&&doc.setGState(doc.GState({opacity:.07}));
-    doc.setGState&&doc.setGState(doc.GState({opacity:1}));
     doc.setDrawColor(201,150,58);doc.setLineWidth(2);doc.rect(2,2,W-4,H-4);
     doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(240,208,128);
     doc.text(catLbl[item.cat],W/2,18,{align:'center'});
-    doc.setFillColor(255,255,255);doc.setOpacity(.15);
-    doc.setFillColor(255,255,255);
     doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(255,255,255);
     const lines=doc.splitTextToSize(item.val,W-16);
     let ty=H/2-(lines.length*9);
     lines.forEach(l=>{doc.text(l,W/2,ty,{align:'center'});ty+=10;});
     doc.setFontSize(7);doc.setTextColor(200,210,220);
-    doc.text('LEXICA — Carte Jury',W/2,H-7,{align:'center'});
+    doc.text('LEXICA - Carte Jury',W/2,H-7,{align:'center'});
   });
   doc.save('lexica_cartes_jury.pdf');
   toast(`🖨️ ${picked.length} cartes jury générées`);
@@ -1689,6 +1726,17 @@ async function checkPwd(){
 // saveDeck() n'existe plus : chaque action (valider/rejeter/supprimer/envoyer) écrit
 // directement la carte concernée dans Firebase ; le tableau local `deck` se met à jour
 // tout seul via l'écoute temps réel (voir fbDB.ref('cards').on('value', ...) plus haut).
+function updateTirageClasseFilters(){
+  const classes=[...new Set(deck.map(c=>c.classe).filter(Boolean))].sort();
+  ['tirage-classeA','tirage-classeB'].forEach(id=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    const val=sel.value;
+    sel.innerHTML = id==='tirage-classeB'
+      ? '<option value="">Aucune — une seule classe joue</option>'
+      : '<option value="">— Choisir —</option>';
+    classes.forEach(c=>sel.innerHTML+=`<option value="${esc(c)}"${val===c?' selected':''}>${esc(c)}</option>`);
+  });
+}
 function updateClasseFilters(){
   const classes=[...new Set(deck.map(c=>c.classe).filter(Boolean))].sort();
   ['filter-classe','export-classe'].forEach(id=>{
