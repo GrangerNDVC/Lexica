@@ -182,8 +182,15 @@ textarea{resize:vertical;line-height:1.55}
 .projection-overlay{position:fixed;inset:0;background:var(--ink);z-index:9000;display:none;padding:40px;overflow:auto}
 .projection-overlay.active{display:block}
 .proj-close{position:fixed;top:16px;right:16px;background:var(--red);color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:1.3rem;cursor:pointer;z-index:9001}
+.sugg-chip-light{background:rgba(74,44,122,.08);border:1px solid rgba(74,44,122,.4);color:#4a2c7a;font-size:.78rem;padding:5px 12px;border-radius:20px;cursor:pointer;transition:all .2s}
+.sugg-chip-light:hover{background:rgba(74,44,122,.2)}
+.aide-card{display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(74,44,122,.06);border:1px solid rgba(74,44,122,.25);border-radius:6px;padding:9px 13px;font-size:.87rem;color:var(--ink);line-height:1.4}
+.aide-empty{font-size:.83rem;color:rgba(26,26,46,.55);font-style:italic}
+.aide-orga-list{padding-left:20px;font-size:.87rem;color:rgba(26,26,46,.82);line-height:1.75;margin:0}
+.aide-tip{margin-top:4px;background:rgba(201,150,58,.14);border:1px solid rgba(201,150,58,.45);border-radius:6px;padding:11px 13px;font-size:.85rem;color:var(--ink);line-height:1.5}
+.aide-section-title{font-weight:700;font-size:.92rem;color:var(--purple);margin-bottom:9px;display:flex;align-items:center;gap:6px}
 .empty-state{text-align:center;padding:50px 20px;color:var(--silver-lt)}
-#toast{position:fixed;bottom:24px;right:24px;background:var(--gold);color:var(--ink);padding:11px 20px;border-radius:6px;font-weight:700;font-size:.85rem;box-shadow:0 4px 18px rgba(0,0,0,.4);transform:translateY(70px);opacity:0;transition:all .3s;z-index:9999;max-width:300px}
+#toast{position:fixed;bottom:100px;right:24px;background:var(--gold);color:var(--ink);padding:11px 20px;border-radius:6px;font-weight:700;font-size:.85rem;box-shadow:0 4px 18px rgba(0,0,0,.4);transform:translateY(70px);opacity:0;transition:all .3s;z-index:9999;max-width:300px}
 #toast.show{transform:translateY(0);opacity:1}
 #toast.err{background:var(--red);color:#fff}
 @media(max-width:700px){.cols-2,.cols-3,.cols-4{grid-template-columns:1fr}.card-face{width:100%;height:auto;aspect-ratio:380/270}.score-board{grid-template-columns:1fr}.contrainte-slot{grid-template-columns:1fr auto}}
@@ -200,7 +207,7 @@ textarea{resize:vertical;line-height:1.55}
     <button class="nav-btn" onclick="setView('eleve')" id="btn-eleve">✏️ Créer une carte</button>
     <button class="nav-btn" onclick="setView('score')" id="btn-score">🏆 Match</button>
     <button class="nav-btn" onclick="setView('tirage')" id="btn-tirage">🎲 Tirage</button>
-    <button class="nav-btn" onclick="setView('fiche')" id="btn-fiche">📋 Fiche projet</button>
+    <button class="nav-btn" onclick="setView('aide')" id="btn-aide">💡 Aide à l'écriture</button>
     <button class="nav-btn" onclick="setView('prog')" id="btn-prog">📚 Progression</button>
     <button class="nav-btn" onclick="setView('prof')" id="btn-prof">🔑 Prof</button>
   </nav>
@@ -372,19 +379,6 @@ textarea{resize:vertical;line-height:1.55}
     <p style="font-size:.72rem;color:var(--silver-lt);margin-top:2px">Ces trois choix sont indépendants — à toi de voir lesquels s'appliquent à ton texte. Ça t'aide à comprendre que genre, type de texte et registre sont trois choses différentes !</p>
   </div>
 
-  <!-- RETROUVER / MODIFIER UNE CARTE DÉJÀ ENVOYÉE -->
-  <div class="panel">
-    <div class="panel-title">🔎 Déjà envoyé une carte ? Retrouve-la ici</div>
-    <p style="font-size:.8rem;color:var(--silver-lt);margin-bottom:10px">Tu veux ajouter une illustration ou améliorer une carte déjà envoyée ? Renseigne ton prénom/nom et ta classe ci-dessus (identiques à l'envoi), puis clique ici.</p>
-    <button class="btn btn-secondary btn-sm" onclick="searchMyCards()">🔎 Chercher mes cartes</button>
-    <div id="mes-cartes-results" style="margin-top:10px"></div>
-  </div>
-
-  <div id="edit-banner" style="display:none;align-items:center;justify-content:space-between;gap:10px;background:rgba(201,150,58,.15);border:1.5px solid var(--gold);border-radius:8px;padding:10px 14px;margin-bottom:20px">
-    <span id="edit-banner-text" style="font-size:.82rem;color:var(--gold-lt)"></span>
-    <button class="btn btn-secondary btn-sm" onclick="cancelEdit()">✕ Annuler la modification</button>
-  </div>
-
   <!-- TEMPS DOMINANT -->
   <div class="panel">
     <div class="panel-title">⏳ Temps dominant <span class="sub">Obligatoire</span></div>
@@ -411,7 +405,7 @@ textarea{resize:vertical;line-height:1.55}
   <div class="panel">
     <div class="panel-title">🎯 Mes contraintes <span class="sub" id="niveau-live-label">Aucune contrainte — carte non jouable</span></div>
     <p style="font-size:.8rem;color:var(--silver-lt);margin-bottom:14px">
-      Choisis un type (grammaire 📐, lexique 📚, conjugaison 🔵 ou autre ✏️), puis <b>invente et décris toi-même</b> ta contrainte dans le champ de texte — il n'y a pas de liste imposée ! Des suggestions apparaissent en dessous, tirées des contraintes déjà inventées par la classe pour cette séquence : tu peux les reprendre ou en créer une nouvelle, qui sera alors proposée aux autres élèves à son tour. Ajoute une 2<sup>e</sup> et une 3<sup>e</sup> contrainte si tu veux relever le défi. <b style="color:var(--gold)">Le niveau de ta carte se calcule automatiquement</b> selon le nombre de contraintes remplies (1 = ★, 2 = ★★, 3 = ★★★). Le thème ne compte jamais comme contrainte.
+      Choisis une 1<sup>re</sup> contrainte dans le menu (grammaire 📐, lexique 📚 ou conjugaison 🔵 — à toi de voir !), puis ajoute une 2<sup>e</sup> et une 3<sup>e</sup> si tu veux relever le défi. <b style="color:var(--gold)">Le niveau de ta carte se calcule automatiquement</b> selon le nombre de contraintes choisies (1 = ★, 2 = ★★, 3 = ★★★). Le thème ne compte jamais comme contrainte.
     </p>
     <div id="contraintes-container"></div>
     <div class="btn-row" id="add-c-btn-row" style="margin-top:8px"></div>
@@ -421,7 +415,7 @@ textarea{resize:vertical;line-height:1.55}
   <div class="panel">
     <div class="panel-title">📜 Ton texte (verso) <span class="sub" id="char-count"></span></div>
     <div class="form-group">
-      <label>Rédige ton texte (15 à 20 lignes recommandées)</label>
+      <label>Rédige ton texte (entre 200 et 500 caractères utiles, hors espaces et ponctuation)</label>
       <textarea id="e-texte" rows="11" placeholder="Commence ici ton texte…&#10;Pense à inclure tes contraintes !" oninput="updatePreview();countChars()"></textarea>
     </div>
   </div>
@@ -586,101 +580,68 @@ textarea{resize:vertical;line-height:1.55}
   </div>
 </div>
 
-<!-- ════ VUE FICHE PROJET ════ -->
-<div class="view" id="view-fiche">
+<!-- ════ VUE AIDE À L'ÉCRITURE ════ -->
+<div class="view" id="view-aide">
   <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-    <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimer la fiche</button>
-    <button class="btn btn-secondary" onclick="resetFiche()">↺ Vider</button>
-    <select class="deck-filter" id="fiche-sequence" onchange="loadFicheSequence()">
-      <option value="">— Modèle pré-rempli : choisir une séquence —</option>
-      <option value="connaitre">🪞 Apprendre à se connaître</option>
-      <option value="renart">🦊 Renart et ses ruses</option>
-      <option value="perceval">⚔️ Perceval et la Table Ronde</option>
-      <option value="cape">🗡️ De cape et de mots</option>
-      <option value="poesie">🌍 Voyager en poésie</option>
-      <option value="avare">🎭 L'Avare</option>
-    </select>
+    <button class="btn btn-secondary" onclick="window.print()">🖨️ Imprimer ces idées</button>
   </div>
-  <div class="fiche-projet" id="fiche-print-area">
-    <h2>⚔️ LEXICA — Fiche de création de carte</h2>
-    <div class="form-row cols-3" style="margin-bottom:0">
-      <div class="fiche-field"><label>Nom / Prénom</label><input class="fiche-input" id="f-auteur" placeholder="…"></div>
-      <div class="fiche-field"><label>Classe</label><input class="fiche-input" id="f-classe" placeholder="…"></div>
-      <div class="fiche-field"><label>Date</label><input class="fiche-input" id="f-date" placeholder="…"></div>
-    </div>
-    <div class="form-row cols-2" style="margin-top:10px">
-      <div class="fiche-field"><label>Séquence</label><input class="fiche-input" id="f-entree" placeholder="…"></div>
-      <div class="fiche-field"><label>Niveau visé (★ / ★★ / ★★★)</label><input class="fiche-input" id="f-niveau" placeholder="…"></div>
-    </div>
-    <div style="margin:14px 0;background:rgba(74,44,122,.08);border-left:4px solid var(--purple);padding:12px;border-radius:4px">
-      <div style="font-weight:700;font-size:.85rem;color:var(--purple);margin-bottom:8px">📌 Contraintes tirées :</div>
-      <div class="fiche-field"><label>Contrainte 1</label><input class="fiche-input" id="f-c1" placeholder="…"></div>
-      <div class="fiche-field"><label>Contrainte 2</label><input class="fiche-input" id="f-c2" placeholder="…"></div>
-      <div class="fiche-field"><label>Contrainte 3 (N2/N3)</label><input class="fiche-input" id="f-c3" placeholder="…"></div>
-    </div>
-    <div style="font-weight:700;font-size:.9rem;color:var(--purple);margin:14px 0 10px">📝 Étapes :</div>
-    <div class="etape">
-      <div class="etape-num" style="background:var(--green)">1</div>
-      <div class="etape-body">
-        <div class="etape-title">🧠 Trouver mes idées (groupe)</div>
-        <div class="etape-desc">Avec mon groupe, je réfléchis à ce que je pourrais écrire. J'écoute les idées des autres.</div>
-        <div class="fiche-field" style="margin-top:8px"><label>Mes idées :</label><textarea class="fiche-textarea" id="f-idees" rows="3" placeholder="…"></textarea></div>
+  <div class="fiche-projet" id="aide-print-area">
+    <h2>💡 Besoin d'idées pour écrire ta carte ?</h2>
+    <p style="font-size:.85rem;color:rgba(26,26,46,.75);line-height:1.6;margin-bottom:18px">
+      Choisis ta séquence, ton type de texte et ton temps dominant : des idées de thèmes, des amorces, du vocabulaire et des conseils d'organisation adaptés apparaissent automatiquement. Rien n'est écrit à ta place — à toi de piocher, transformer et écrire <b>ton</b> texte !
+    </p>
+    <div class="form-row cols-3" style="margin-bottom:20px">
+      <div class="fiche-field"><label>Séquence</label>
+        <select class="fiche-input" id="aide-entree" onchange="renderAide()">
+          <option value="">— Choisir —</option>
+          <option value="Connaitre">🪞 Apprendre à se connaître</option>
+          <option value="Renart">🦊 Renart et ses ruses</option>
+          <option value="Perceval">⚔️ Perceval et la Table Ronde</option>
+          <option value="Cape">🗡️ De cape et de mots</option>
+          <option value="Poesie">🌍 Voyager en poésie</option>
+          <option value="Avare">🎭 L'Avare</option>
+        </select>
+      </div>
+      <div class="fiche-field"><label>Type de texte</label>
+        <select class="fiche-input" id="aide-type" onchange="renderAide()">
+          <option value="">— Choisir —</option>
+          <option value="Narratif">Narratif (raconter)</option>
+          <option value="Descriptif">Descriptif (décrire)</option>
+          <option value="Explicatif">Explicatif (expliquer)</option>
+          <option value="Argumentatif">Argumentatif (convaincre)</option>
+          <option value="Injonctif">Injonctif (donner des consignes)</option>
+        </select>
+      </div>
+      <div class="fiche-field"><label>Temps dominant</label>
+        <select class="fiche-input" id="aide-temps" onchange="renderAide()">
+          <option value="">— Choisir —</option>
+          <option value="discours">🗣️ Discours (présent)</option>
+          <option value="recit">📖 Récit (passé)</option>
+        </select>
       </div>
     </div>
-    <div class="etape">
-      <div class="etape-num" style="background:var(--purple)">2</div>
-      <div class="etape-body">
-        <div class="etape-title">✏️ Mon plan / brouillon</div>
-        <div class="etape-desc">Je note les grandes lignes. Où vais-je placer mes contraintes ?</div>
-        <div class="fiche-field" style="margin-top:8px"><label>Mon plan :</label><textarea class="fiche-textarea" id="f-plan" rows="3" placeholder="…"></textarea></div>
-      </div>
+
+    <div style="margin-bottom:22px">
+      <div class="aide-section-title">🎭 Idées de thèmes</div>
+      <div id="aide-themes" style="display:flex;flex-wrap:wrap;gap:7px"></div>
     </div>
-    <div class="etape">
-      <div class="etape-num" style="background:var(--gold);color:var(--ink)">3</div>
-      <div class="etape-body">
-        <div class="etape-title">📝 Rédaction du brouillon</div>
-        <div class="etape-desc">Je rédige mon texte. Je vérifie que mes contraintes sont bien présentes.</div>
-        <div style="display:flex;flex-direction:column;gap:5px;margin-top:8px">
-          <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;cursor:pointer"><input type="checkbox"> Contrainte 1 présente et identifiable</label>
-          <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;cursor:pointer"><input type="checkbox"> Contrainte 2 présente et identifiable</label>
-          <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;cursor:pointer"><input type="checkbox"> Contrainte 3 présente et identifiable</label>
-        </div>
-      </div>
+
+    <div style="margin-bottom:22px">
+      <div class="aide-section-title">✏️ Amorces — pour démarrer ton texte</div>
+      <div id="aide-amorces" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
-    <div class="etape">
-      <div class="etape-num" style="background:var(--blue)">4</div>
-      <div class="etape-body">
-        <div class="etape-title">🔄 Relecture croisée</div>
-        <div class="etape-desc">J'échange avec un camarade. Il coche les contraintes trouvées et suggère une amélioration.</div>
-        <div class="fiche-field" style="margin-top:8px"><label>Relecteur (prénom)</label><input class="fiche-input" id="f-retour-qui" placeholder="…"></div>
-        <div class="fiche-field"><label>Retour reçu</label><textarea class="fiche-textarea" id="f-retour" rows="2" placeholder="…"></textarea></div>
-      </div>
+
+    <div style="margin-bottom:22px">
+      <div class="aide-section-title">📚 Vocabulaire à piocher</div>
+      <div id="aide-vocab" style="display:flex;flex-wrap:wrap;gap:7px"></div>
     </div>
-    <div class="etape">
-      <div class="etape-num" style="background:var(--red)">5</div>
-      <div class="etape-body">
-        <div class="etape-title">✨ Mise en forme finale</div>
-        <div class="etape-desc">Je recopie mon texte proprement. Je réalise mon illustration.</div>
-        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
-          <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;cursor:pointer"><input type="checkbox"> Texte recopié proprement</label>
-          <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;cursor:pointer"><input type="checkbox"> Illustration réalisée</label>
-          <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;cursor:pointer"><input type="checkbox"> Nom + classe inscrits</label>
-          <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;cursor:pointer"><input type="checkbox"> Carte saisie dans LEXICA</label>
-        </div>
-      </div>
+
+    <div style="margin-bottom:22px">
+      <div class="aide-section-title">🧭 Conseils d'organisation</div>
+      <div id="aide-orga"></div>
     </div>
-    <div style="margin-top:14px;background:rgba(201,150,58,.08);border:1px solid var(--gold);border-radius:6px;padding:12px">
-      <div style="font-weight:700;font-size:.85rem;color:var(--gold);margin-bottom:8px">🔍 Auto-évaluation :</div>
-      <div class="form-row cols-3" style="margin-bottom:8px">
-        <div class="fiche-field"><label>Contraintes respectées</label>
-          <select class="fiche-input" id="f-ae1"><option>Oui ✓</option><option>Presque</option><option>Non ✗</option></select></div>
-        <div class="fiche-field"><label>Niveau visé atteint</label>
-          <select class="fiche-input" id="f-ae2"><option>Oui ✓</option><option>Presque</option><option>Non ✗</option></select></div>
-        <div class="fiche-field"><label>Prêt(e) à prouver</label>
-          <select class="fiche-input" id="f-ae3"><option>Oui ✓</option><option>Presque</option><option>Non ✗</option></select></div>
-      </div>
-      <div class="fiche-field"><label>Ma phrase préférée dans mon texte</label><input class="fiche-input" id="f-phrase-pref" placeholder="…"></div>
-    </div>
+
+    <div id="aide-temps-tip"></div>
   </div>
 </div>
 
@@ -857,6 +818,42 @@ try{
 }
 
 // ══════════════════════════════════════════════════════
+// BASE DE CONTRAINTES
+// ══════════════════════════════════════════════════════
+const DB = {
+  Connaitre:{
+    grammaire:['Phrase avec attribut du sujet (« Je suis… »)','Complément du nom pour préciser un trait','Proposition subordonnée relative (qui/que me caractérise)','Comparaison introduite par « comme »','Énumération de qualités ou de goûts','Phrase exclamative pour exprimer une émotion','Question rhétorique sur soi-même','Négation pour dire ce qu\'on n\'est pas'],
+    lexique:['Champ lexical des goûts et des loisirs','Trois adjectifs de caractère bien choisis','Comparaison valorisante','Vocabulaire des émotions et des sentiments','Métaphore pour se décrire','Registre familier assumé','Antithèse (ce que je suis / ce que je ne suis pas)','Expression imagée sur soi'],
+    conjugaison:['Présent de l\'indicatif (habitudes, goûts)','Passé composé (un souvenir marquant)','Futur simple (un projet, un rêve)','Imparfait (comment j\'étais avant)','Conditionnel présent (ce que j\'aimerais être)','Présent de vérité générale']
+  },
+  Renart:{
+    grammaire:['Connecteur logique de conséquence (donc, ainsi)','Proposition subordonnée de cause','Négation restrictive (ne… que)','Adverbes de manière bien choisis','Proposition subordonnée de but','Complément circonstanciel de temps','Apposition (caractérisation d\'un personnage)','Phrase complexe par subordination'],
+    lexique:['Champ lexical de la ruse / de la sagesse','Vocabulaire des animaux et leurs qualités symboliques','Morale rédigée en style sentencieux','Famille de mots autour de « sage » ou « orgueilleux »','Comparaison entre deux personnages','Trois adjectifs d\'attitude (fier, rusé, naïf…)','Registre adapté au personnage animal','Proverbe ou expression figée'],
+    conjugaison:['Présent de narration','Passé simple des actions','Présent de vérité générale (pour la morale)','Imparfait descriptif','Conditionnel présent (ruse / hypothèse)','Subjonctif présent','Futur simple','Infinitif à valeur de narration']
+  },
+  Perceval:{
+    grammaire:['Proposition subordonnée relative','Complément circonstanciel de manière développé','Attribut du sujet expressif','COD avec expansion adjectivale','Discours direct','Discours indirect','Proposition subordonnée de cause','Phrase complexe par coordination','Apposition caractérisante'],
+    lexique:['Champ lexical du courage','Champ lexical du combat','Famille de mots autour de « vaillant »','Trois adjectifs qualificatifs précis et variés','Métaphore liée au combat','Comparaison expressive','Vocabulaire de la chevalerie / de la quête','Registre soutenu (mot non-courant)','Oxymore'],
+    conjugaison:['Passé simple des actions','Imparfait pour le décor / la durée','Alternance passé simple / imparfait justifiée','Présent de narration','Plus-que-parfait pour antériorité','Conditionnel présent (souhait / hypothèse)','Subjonctif présent','Futur simple']
+  },
+  Cape:{
+    grammaire:['Discours direct avec verbe introducteur varié','Phrase complexe par subordination (cause, conséquence)','Question rhétorique dans un dialogue','Ironie / antiphrase','Apostrophe (interpeller un personnage)','Négation restrictive (ne… que)','Phrase courte pour un effet de rythme (suspense)','Discours indirect'],
+    lexique:['Champ lexical de la ruse et du stratagème','Jeu de mots ou expression à double sens','Champ lexical de l\'aventure et du danger','Trois verbes de parole variés (répliquer, rétorquer, persifler…)','Comparaison inattendue','Registre soutenu contrastant avec le familier','Antithèse','Métaphore filée sur le combat verbal'],
+    conjugaison:['Passé simple des actions d\'aventure','Imparfait pour le décor ou la tension','Présent de narration (accélérer l\'action)','Conditionnel présent (bluff, hypothèse)','Impératif présent (ordre, défi)','Plus-que-parfait (antériorité d\'un stratagème)','Futur simple (menace, promesse)']
+  },
+  Poesie:{
+    grammaire:['Énumération de groupes nominaux','Phrase nominale (sans verbe conjugué)','Connecteur d\'opposition (mais, pourtant)','Répétition intentionnelle (anaphore)','Proposition subordonnée de temps','Apposition','Question rhétorique','Phrase exclamative','Juxtaposition de propositions courtes'],
+    lexique:['Champ lexical de la lumière / de l\'ombre','Personnification d\'un élément naturel','Allitération douce ou dure','Trois couleurs nuancées','Métaphore filée sur deux lignes','Vocabulaire des cinq sens','Registre poétique soutenu (azur, frémir…)','Oxymore','Synesthésie'],
+    conjugaison:['Présent de vérité générale','Imparfait descriptif','Passé composé','Futur simple (projection / rêve)','Conditionnel présent (rêve / hypothèse)','Présent de l\'indicatif','Subjonctif imparfait (style soutenu)','Infinitif à valeur d\'impératif']
+  },
+  Avare:{
+    grammaire:['Didascalies précises et expressives','Niveaux de langue contrastés entre personnages','Questions rhétoriques dans une réplique','Connecteurs d\'argumentation (donc, car, puisque)','Subjonctif présent dans une réplique','Phrase longue vs courte (effet rythmique)','Discours direct avec verbes introducteurs variés','Négation restrictive (ne… que)'],
+    lexique:['Vocabulaire du théâtre (réplique, tirade, aparté…)','Champ lexical de l\'avarice et de l\'argent','Champ lexical de la tromperie / de la ruse','Expressions familières contrastant avec le soutenu','Interjections et exclamations expressives','Trois verbes d\'action variés pour un même personnage','Comparaison dans une réplique','Registre comique'],
+    conjugaison:['Présent de l\'indicatif (dialogue vivant)','Impératif présent','Subjonctif présent','Futur simple (menace / promesse)','Conditionnel présent (politesse / reproche)','Passé composé','Imparfait narratif','Passé simple dans un récit enchâssé']
+  }
+};
+
+// ══════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════
 let deck = []; // rempli en temps réel par Firebase (voir plus haut), plus par localStorage
@@ -866,7 +863,6 @@ let illustrationData=null, currentNiveau=0;
 let tirageHistory = JSON.parse(localStorage.getItem('lexica_tirage_history')||'{}');
 let themes=[], contraintes=[];
 let tempsDominant=''; // 'discours' ou 'recit' — influence le niveau (voir renderContraintes)
-let editingCardId=null; // non-null quand l'élève modifie une carte déjà envoyée (voir searchMyCards/loadCardForEdit)
 
 const C_TYPES = {
   grammaire:{label:'📐 Grammaire',cls:'tb-grammaire',ptcls:'pt-g'},
@@ -907,6 +903,7 @@ function setView(v){
   if(v==='prog'){renderProg();}
   if(v==='tirage'){updateTirageClasseFilters();renderPoidsClasse();}
   if(v==='score'){renderHistorique();}
+  if(v==='aide'){renderAide();}
 }
 
 // ══════════════════════════════════════════════════════
@@ -944,85 +941,67 @@ function handleEntreeChange(){
 }
 
 // ══════════════════════════════════════════════════════
-// CONTRAINTES — saisie libre par l'élève, avec suggestions tirées
-// des contraintes déjà utilisées par la classe (via le deck partagé),
-// pour la même séquence. Dès qu'un·e élève invente une contrainte,
-// elle devient une suggestion pour tout le monde sur cette séquence.
+// CONTRAINTES
 // ══════════════════════════════════════════════════════
-function getContrainteSuggestions(entree,type){
-  if(!entree||!type)return[];
-  const freq={};
-  deck.forEach(card=>{
-    if(card.entree!==entree)return;
-    (card.contraintes||[]).forEach(c=>{
-      if(c.type===type && c.val) freq[c.val]=(freq[c.val]||0)+1;
+function buildContrainteSelect(slot,entree){
+  const opts = entree&&DB[entree] ? DB[entree] : {grammaire:[],lexique:[],conjugaison:[]};
+  const cur = slot.val==='__custom__' ? 'custom' : (slot.type&&slot.val ? slot.type+'|'+slot.val : '');
+  let html=`<select onchange="setContrainteSlot('${slot.id}',this.value)"><option value="">— Choisir une contrainte —</option>`;
+  ['grammaire','lexique','conjugaison'].forEach(k=>{
+    const list=opts[k]||[];
+    if(!list.length)return;
+    html+=`<optgroup label="${C_TYPES[k].label}">`;
+    list.forEach(v=>{
+      const val=k+'|'+v;
+      html+=`<option value="${esc(val)}"${cur===val?' selected':''}>${esc(v)}</option>`;
     });
+    html+='</optgroup>';
   });
-  return Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,12).map(e=>e[0]);
+  html+=`<option value="custom"${cur==='custom'?' selected':''}>✏️ Autre (saisie libre)…</option></select>`;
+  return html;
 }
-function setContrainteType(id,type){
+function setContrainteSlot(id,value){
   const slot=contraintes.find(c=>c.id===id);if(!slot)return;
-  slot.type=type;
-  renderContraintes();updatePreview();
-}
-function setContrainteVal(id,val){
-  const slot=contraintes.find(c=>c.id===id);if(!slot)return;
-  slot.val=val;
-  recomputeNiveau();
-  updatePreview();
-}
-function pickContrainteSuggestion(id,val){
-  const slot=contraintes.find(c=>c.id===id);if(!slot)return;
-  slot.val=val;
+  if(value==='custom'){slot.type='autre';slot.val='__custom__';}
+  else if(value===''){slot.type='';slot.val='';}
+  else{const i=value.indexOf('|');slot.type=value.substring(0,i);slot.val=value.substring(i+1);}
   renderContraintes();updatePreview();
 }
 function addContrainteSlot(){
   if(contraintes.length>=3){toast('⚠️ Maximum 3 contraintes par carte',true);return;}
   if(!document.getElementById('e-entree').value){toast('⚠️ Choisis d\'abord une séquence',true);return;}
-  contraintes.push({id:'c'+Date.now()+Math.random(),type:'',val:''});
+  contraintes.push({id:'c'+Date.now()+Math.random(),type:'',val:'',customVal:''});
   renderContraintes();updatePreview();
 }
 function removeContrainteSlot(id){
   contraintes=contraintes.filter(c=>c.id!==id);
   renderContraintes();updatePreview();
 }
-function recomputeNiveau(){
-  const filled=contraintes.filter(c=>c.type&&c.val&&c.val.trim()).length;
-  currentNiveau = Math.max(filled, tempsDominant==='recit'?2:0);
-  updateNiveauLabel();
-}
 function renderContraintes(){
   const entree=document.getElementById('e-entree').value;
   const cont=document.getElementById('contraintes-container');
   const addRow=document.getElementById('add-c-btn-row');
-  recomputeNiveau();
+  currentNiveau = Math.max(contraintes.length, tempsDominant==='recit'?2:0);
   if(!entree){
-    cont.innerHTML='<p style="font-size:.82rem;color:var(--silver-lt);font-style:italic">Choisis d\'abord une séquence ci-dessus pour créer tes contraintes.</p>';
+    cont.innerHTML='<p style="font-size:.82rem;color:var(--silver-lt);font-style:italic">Choisis d\'abord une séquence ci-dessus pour voir les contraintes possibles.</p>';
     addRow.innerHTML='';
+    updateNiveauLabel();
     return;
   }
   cont.innerHTML=contraintes.map((c,i)=>{
-    const sugg=getContrainteSuggestions(entree,c.type);
-    const suggHtml = !c.type ? '' : (sugg.length
-      ? `<div style="margin:6px 0 2px;display:flex;flex-wrap:wrap;gap:5px"><span style="font-size:.68rem;color:var(--silver-lt);width:100%">💡 Déjà inventées par la classe pour ce type (clique pour reprendre) :</span>${sugg.map(v=>`<button type="button" class="sugg-chip" onclick="pickContrainteSuggestion('${c.id}','${v.replace(/'/g,"\\'")}')">${esc(v.substring(0,44))}</button>`).join('')}</div>`
-      : `<div style="font-size:.68rem;color:var(--silver-lt);font-style:italic;margin:4px 0 2px">Sois le/la premier·ère à inventer une contrainte de ce type pour cette séquence ! Elle sera proposée aux autres élèves ensuite.</div>`);
-    return `<div style="margin-bottom:12px">
+    const sel=buildContrainteSelect(c,entree);
+    const custom = c.val==='__custom__' ? `<div style="padding:6px 0 8px 4px"><input type="text" placeholder="Décris librement ta contrainte…" value="${esc(c.customVal||'')}" style="width:100%" oninput="contraintes.find(x=>x.id==='${c.id}').customVal=this.value;updatePreview()"></div>` : '';
+    return `<div style="margin-bottom:10px">
       <label style="display:block;margin-bottom:4px">Contrainte ${i+1}${i===0?' <span style="color:#ff8899">(obligatoire)</span>':' <span style="color:var(--silver-lt)">(optionnelle)</span>'}</label>
-      <div class="contrainte-slot" style="grid-template-columns:150px 1fr auto">
-        <select onchange="setContrainteType('${c.id}',this.value)">
-          <option value="">Type ?</option>
-          <option value="grammaire"${c.type==='grammaire'?' selected':''}>📐 Grammaire</option>
-          <option value="lexique"${c.type==='lexique'?' selected':''}>📚 Lexique</option>
-          <option value="conjugaison"${c.type==='conjugaison'?' selected':''}>🔵 Conjugaison</option>
-          <option value="autre"${c.type==='autre'?' selected':''}>✏️ Autre</option>
-        </select>
-        <input type="text" placeholder="Décris librement ta contrainte…" value="${esc(c.val)}" oninput="setContrainteVal('${c.id}',this.value)">
+      <div class="contrainte-slot" style="grid-template-columns:1fr auto">
+        ${sel}
         <button class="del-btn" onclick="removeContrainteSlot('${c.id}')">✕</button>
       </div>
-      ${suggHtml}
+      ${custom}
     </div>`;
   }).join('');
-  const labels=['+ Créer ma 1ère contrainte','+ Ajouter une 2ᵉ contrainte (optionnel → Niveau 2)','+ Ajouter une 3ᵉ contrainte (optionnel → Niveau 3)'];
+  updateNiveauLabel();
+  const labels=['+ Choisir ma 1ère contrainte','+ Ajouter une 2ᵉ contrainte (optionnel → Niveau 2)','+ Ajouter une 3ᵉ contrainte (optionnel → Niveau 3)'];
   addRow.innerHTML = contraintes.length<3
     ? `<button class="btn btn-secondary btn-sm" onclick="addContrainteSlot()">${labels[contraintes.length]}</button>`
     : `<p style="font-size:.78rem;color:var(--gold-lt)">✔️ Maximum de 3 contraintes atteint — ta carte sera Niveau 3 ★★★</p>`;
@@ -1044,10 +1023,9 @@ function updateNiveauLabel(){
   const n=currentNiveau;
   const lbl=document.getElementById('niveau-live-label');
   if(!lbl)return;
-  const filled=contraintes.filter(c=>c.type&&c.val&&c.val.trim()).length;
   if(n===0){lbl.textContent='Aucune contrainte — carte non jouable';lbl.style.color='#ff8899';}
   else{
-    const via = (tempsDominant==='recit' && filled<2) ? ' (grâce au temps du récit)' : '';
+    const via = (tempsDominant==='recit' && contraintes.length<2) ? ' (grâce au temps du récit)' : '';
     lbl.textContent=`${'★'.repeat(n)} Niveau ${n}${via}`;
     lbl.style.color=n===1?'var(--bronze-lt)':n===2?'var(--silver-lt)':'var(--gold-lt)';
   }
@@ -1092,9 +1070,20 @@ function getFormData(){
     texte:(document.getElementById('e-texte')?.value||'').trim(),
     niveau:currentNiveau,
     themes:themes.map(t=>t.val).filter(Boolean),
-    contraintes:contraintes.map(c=>({type:c.type,val:(c.val||'').trim()})).filter(c=>c.type&&c.val),
+    contraintes:contraintes.map(c=>({type:c.type,val:c.val==='__custom__'?(c.customVal||''):c.val})).filter(c=>c.val),
     illustration:illustrationData
   };
+}
+// Renvoie une taille de police adaptée à la longueur du texte pour que celui-ci
+// tienne toujours en entier sur la carte, quelle que soit sa longueur (200-500 car. utiles).
+function versoFontSize(rawLen){
+  if(rawLen<=250)return '.68rem';
+  if(rawLen<=350)return '.62rem';
+  if(rawLen<=450)return '.58rem';
+  if(rawLen<=550)return '.53rem';
+  if(rawLen<=650)return '.5rem';
+  if(rawLen<=750)return '.46rem';
+  return '.42rem';
 }
 function starsHtml(n,sz='1rem'){
   const col={0:'rgba(247,243,233,.3)',1:'#c8a880',2:'#c8d4e0',3:'#f0d080'};
@@ -1106,13 +1095,13 @@ function renderRecto(d){
   const el=document.getElementById('prev-recto');
   const titre=d.titre||'[ Titre ]';
   const texte=d.texte||'[ Ton texte apparaîtra ici… ]';
-  const tr=texte.length>420?texte.substring(0,420)+'…':texte;
+  const fsize=versoFontSize(texte.length);
   const tempsLabel = d.temps==='recit' ? '⏳ Récit (passé simple / imparfait)' : d.temps==='discours' ? '🗣️ Discours (présent)' : '';
   const tempsTag = tempsLabel ? `<span class="prouver-tag" style="background:rgba(74,44,122,.18);color:#3a2260;border:1px solid #7a3a9a">${esc(tempsLabel)}</span>` : '';
   const cTags=d.contraintes.map(c=>`<span class="prouver-tag ${(C_TYPES[c.type]||C_TYPES.grammaire).ptcls}">${esc(c.val.substring(0,30))}</span>`).join('');
   const tTags=d.themes.map(t=>`<span class="theme-tag">${esc(t.substring(0,24))}</span>`).join('');
   el.innerHTML=`<div class="verso-header"><div class="verso-titre">${esc(titre)}</div>${starsHtml(d.niveau,'.82rem')}</div>
-    <div class="verso-texte">${esc(tr)}</div>
+    <div class="verso-texte" style="font-size:${fsize}">${esc(texte)}</div>
     <div class="verso-prouver">
       <div class="verso-prouver-title">🎯 Contraintes à retrouver dans le texte :</div>
       <div class="verso-prouver-tags">${tempsTag}${cTags||(tempsTag?'':'<span style="font-size:.6rem;color:rgba(26,26,46,.4);font-style:italic">Aucune contrainte choisie</span>')}</div>
@@ -1135,9 +1124,14 @@ function renderVerso(d){
 function countChars(){
   const t=document.getElementById('e-texte').value;
   const lines=t.split('\n').length;
+  const meaningful=meaningfulCharCount(t);
   const el=document.getElementById('char-count');
-  el.textContent=`${t.length} car. · ~${lines} ligne(s)`;
-  el.style.color=lines>=15?'#52b788':lines>=8?'#f0d080':'var(--silver-lt)';
+  let color, statut;
+  if(meaningful<200){color='#ff8899';statut=`encore ${200-meaningful} avant le minimum`;}
+  else if(meaningful>500){color='#ff8899';statut=`${meaningful-500} de trop (max 500)`;}
+  else{color='#52b788';statut='✓ longueur correcte';}
+  el.textContent=`${meaningful}/500 car. utiles (hors espaces/ponctuation) — ${statut} · ~${lines} ligne(s)`;
+  el.style.color=color;
 }
 
 // ══════════════════════════════════════════════════════
@@ -1150,28 +1144,15 @@ function submitCard(){
   if(!d.titre)return toast('⚠️ Donne un titre',true);
   if(!d.entree)return toast('⚠️ Choisis une séquence',true);
   if(!d.temps)return toast('⚠️ Choisis le temps dominant (discours ou récit)',true);
-  if(!d.texte||d.texte.length<50)return toast('⚠️ Texte trop court !',true);
-  if(!d.contraintes.length)return toast('⚠️ Choisis au moins 1 contrainte',true);
-  const incomplete=contraintes.some(c=>!c.type||!c.val||!c.val.trim());
-  if(incomplete)return toast('⚠️ Termine de décrire chacune de tes contraintes (type + texte)',true);
-  if(!requireFirebase())return;
-  if(editingCardId){
-    const existing=deck.find(c=>c.id===editingCardId) || {};
-    const card={...existing,...d,id:editingCardId,
-      dateEnvoi:existing.dateEnvoi||new Date().toLocaleDateString('fr-FR'),
-      dateModif:new Date().toLocaleDateString('fr-FR'),
-      statut:'attente',commentaire:''};
-    fbDB.ref('cards/'+editingCardId).set(card).then(()=>{
-      toast('✅ Carte modifiée et renvoyée au deck !');
-      editingCardId=null;
-      const banner=document.getElementById('edit-banner');if(banner)banner.style.display='none';
-      setTimeout(resetForm,800);
-    }).catch(err=>{
-      console.error('Modification carte échouée', err);
-      toast('⚠️ Envoi impossible — vérifie ta connexion et réessaie',true);
-    });
-    return;
+  {
+    const meaningful=meaningfulCharCount(d.texte);
+    if(meaningful<200)return toast(`⚠️ Texte trop court : ${meaningful}/200 caractères utiles minimum (hors espaces et ponctuation)`,true);
+    if(meaningful>500)return toast(`⚠️ Texte trop long : ${meaningful}/500 caractères utiles maximum (hors espaces et ponctuation)`,true);
   }
+  if(!d.contraintes.length)return toast('⚠️ Choisis au moins 1 contrainte',true);
+  const incomplete=contraintes.some(c=>!c.val||(c.val==='__custom__'&&!c.customVal));
+  if(incomplete)return toast('⚠️ Termine de choisir/décrire chacune de tes contraintes',true);
+  if(!requireFirebase())return;
   const card={...d,id:Date.now()+'_'+Math.random().toString(36).substr(2,5),
     dateEnvoi:new Date().toLocaleDateString('fr-FR'),statut:'attente',commentaire:''};
   fbDB.ref('cards/'+card.id).set(card).then(()=>{
@@ -1189,72 +1170,7 @@ function resetForm(){
   document.querySelectorAll('input[name="temps"]').forEach(r=>r.checked=false);
   document.getElementById('temps-warning').textContent='';
   tempsDominant='';currentNiveau=0;themes=[];contraintes=[];illustrationData=null;
-  editingCardId=null;
-  const banner=document.getElementById('edit-banner');if(banner)banner.style.display='none';
-  const results=document.getElementById('mes-cartes-results');if(results)results.innerHTML='';
   removeImage();renderThemes();renderThemeSuggestions();renderContraintes();updatePreview();countChars();
-}
-
-// ══════════════════════════════════════════════════════
-// RETROUVER / MODIFIER UNE CARTE DÉJÀ ENVOYÉE
-// ══════════════════════════════════════════════════════
-function searchMyCards(){
-  const wrap=document.getElementById('mes-cartes-results');if(!wrap)return;
-  const nom=(document.getElementById('e-auteur').value||'').trim().toLowerCase();
-  const cl=(document.getElementById('e-classe').value||'').trim().toLowerCase();
-  if(!nom||!cl){wrap.innerHTML='<p style="font-size:.78rem;color:var(--silver-lt);font-style:italic">Indique ton prénom + nom et ta classe ci-dessus (comme lors de l\'envoi), puis clique sur « Chercher ».</p>';return;}
-  const mine=deck.filter(c=>(c.auteur||'').trim().toLowerCase()===nom && (c.classe||'').trim().toLowerCase()===cl);
-  if(!mine.length){wrap.innerHTML='<p style="font-size:.78rem;color:var(--silver-lt);font-style:italic">Aucune carte trouvée avec ce prénom/nom et cette classe.</p>';return;}
-  const sLbl={attente:'⏳ En attente',validee:'✓ Validée',rejetee:'↩ À retravailler'};
-  wrap.innerHTML=mine.map(c=>`
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(201,150,58,.2);border-radius:6px;padding:8px 10px;margin-bottom:6px;flex-wrap:wrap">
-      <div style="font-size:.8rem">${c.numero?`<b style="color:var(--gold-lt)">N°${c.numero}</b> — `:''}«&nbsp;${esc(c.titre||'—')}&nbsp;» <span style="color:var(--silver-lt)">(${sLbl[c.statut]||c.statut})</span></div>
-      <button class="btn btn-secondary btn-sm" onclick="loadCardForEdit('${c.id}')">✏️ Modifier cette carte</button>
-    </div>`).join('');
-}
-function loadCardForEdit(id){
-  const c=deck.find(x=>x.id===id);if(!c)return;
-  editingCardId=id;
-  document.getElementById('e-auteur').value=c.auteur||'';
-  document.getElementById('e-classe').value=c.classe||'';
-  document.getElementById('e-titre').value=c.titre||'';
-  document.getElementById('e-entree').value=c.entree||'';
-  const desc=document.getElementById('e-entree-desc');
-  if(desc)desc.textContent=c.entree?ENTREE_FULL[c.entree]:'';
-  document.getElementById('e-genre').value=c.genre||'';
-  document.getElementById('e-type').value=c.type||'';
-  document.getElementById('e-registre').value=c.registre||'';
-  document.getElementById('e-texte').value=c.texte||'';
-  tempsDominant=c.temps||'';
-  document.querySelectorAll('input[name="temps"]').forEach(r=>{r.checked=(r.value===tempsDominant);});
-  const w=document.getElementById('temps-warning');
-  if(w){
-    if(tempsDominant==='recit')w.innerHTML='⚠️ Le temps du récit est une contrainte exigeante : ta carte passe automatiquement en <b style="color:var(--gold-lt)">Niveau ★★ minimum</b>, même sans contrainte supplémentaire. Attention : les erreurs de temps (passé simple / imparfait mal employés) seront <b style="color:#ff8899">fortement pénalisées</b> pendant le match.';
-    else if(tempsDominant==='discours')w.innerHTML='<span style="color:var(--silver-lt)">Le présent domine ton texte (vérité générale, dialogue vivant, narration au présent…).</span>';
-    else w.textContent='';
-  }
-  themes=(c.themes||[]).map(v=>({id:'t'+Date.now()+Math.random(),val:v}));
-  contraintes=(c.contraintes||[]).map(cc=>({id:'c'+Date.now()+Math.random(),type:cc.type,val:cc.val}));
-  illustrationData=c.illustration||null;
-  if(illustrationData){
-    const p=document.getElementById('illus-preview');p.src=illustrationData;p.style.display='block';
-    document.getElementById('illus-name').textContent='Illustration déjà envoyée (tu peux la remplacer)';
-  } else {
-    document.getElementById('illus-preview').style.display='none';
-    document.getElementById('illus-name').textContent='';
-  }
-  renderThemes();renderThemeSuggestions();renderContraintes();updatePreview();countChars();
-  const banner=document.getElementById('edit-banner');
-  const bannerText=document.getElementById('edit-banner-text');
-  if(banner&&bannerText){
-    bannerText.textContent=`✏️ Tu modifies ta carte « ${c.titre||''} »${c.numero?` (N°${c.numero})`:''}. Renvoie-la une fois tes changements faits.`;
-    banner.style.display='flex';
-  }
-  toast('📂 Carte chargée — modifie-la puis renvoie-la');
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function cancelEdit(){
-  resetForm();
 }
 
 // ══════════════════════════════════════════════════════
@@ -1621,27 +1537,27 @@ function showTirageResultsMachine(seqChoice, contPicked){
   container.insertAdjacentElement('afterend',cardsDiv);
 }
 function getAllDbItems(){
-  // Toutes les contraintes réellement inventées par les élèves, toutes séquences/classes
-  // confondues, d'après le deck partagé (pour les cartes jury de référence).
+  // Toutes les notions de la base, toutes séquences confondues (pour les cartes jury de référence).
   const seen=new Set();
   const items=[];
-  deck.forEach(card=>{
-    (card.contraintes||[]).forEach(c=>{
-      if(!c.val||!c.type)return;
-      const key=c.type+'|'+c.val;
-      if(!seen.has(key)){seen.add(key);items.push({cat:c.type,val:c.val});}
+  Object.values(DB).forEach(src=>{
+    ['grammaire','lexique','conjugaison'].forEach(k=>{
+      (src[k]||[]).forEach(v=>{
+        const key=k+'|'+v;
+        if(!seen.has(key)){seen.add(key);items.push({cat:k,val:v});}
+      });
     });
   });
   return items;
 }
 function exportCarteJury(){
   const items=getAllDbItems();
-  if(!items.length){toast('⚠️ Aucune contrainte disponible pour l\'instant — attends que des cartes soient envoyées',true);return;}
+  if(!items.length){toast('⚠️ Aucune contrainte disponible',true);return;}
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a6'});
   const W=148,H=105;
-  const catCol={grammaire:[45,106,79],lexique:[155,35,53],conjugaison:[26,58,106],autre:[74,44,122]};
-  const catLbl={grammaire:'GRAMMAIRE',lexique:'LEXIQUE',conjugaison:'CONJUGAISON',autre:'AUTRE'};
+  const catCol={grammaire:[45,106,79],lexique:[155,35,53],conjugaison:[26,58,106]};
+  const catLbl={grammaire:'GRAMMAIRE',lexique:'LEXIQUE',conjugaison:'CONJUGAISON'};
   const picked=[];
   for(let i=0;i<Math.min(items.length,30);i++){
     const p=pickWeighted(items,picked.map(s=>s.val));picked.push(p);
@@ -1665,31 +1581,148 @@ function exportCarteJury(){
 }
 
 // ══════════════════════════════════════════════════════
-// FICHE PROJET
+// AIDE À L'ÉCRITURE — tout est pré-paramétré (pas d'IA) : à partir des choix de
+// l'élève (séquence / type de texte / temps), on affiche thèmes, amorces,
+// vocabulaire et conseils d'organisation adaptés.
 // ══════════════════════════════════════════════════════
-const FICHE_PRESETS={
-  connaitre:{entree:'Apprendre à se connaître',c1:'Trois adjectifs de caractère bien choisis',c2:'Champ lexical des goûts et des loisirs',c3:'Comparaison introduite par « comme »'},
-  renart:{entree:'Renart et ses ruses',c1:'Champ lexical de la ruse / de la sagesse',c2:'Vocabulaire des animaux et leurs qualités symboliques',c3:'Morale rédigée en style sentencieux'},
-  perceval:{entree:'Perceval et la Table Ronde',c1:'Passé simple pour les actions du héros',c2:'Champ lexical du courage',c3:'Proposition subordonnée relative'},
-  cape:{entree:'De cape et de mots',c1:'Champ lexical de la ruse et du stratagème',c2:'Discours direct avec verbe introducteur varié',c3:'Jeu de mots ou expression à double sens'},
-  poesie:{entree:'Voyager en poésie',c1:'Personnification d\'un élément naturel',c2:'Champ lexical de la lumière',c3:'Anaphore (répétition intentionnelle)'},
-  avare:{entree:'L\'Avare (Molière)',c1:'Niveaux de langue contrastés',c2:'Champ lexical de l\'avarice et de l\'argent',c3:'Subjonctif présent dans une réplique'}
+
+// Amorces (débuts de phrase) proposées par séquence, pour lancer l'écriture.
+const AMORCES={
+  Connaitre:[
+    'Si je devais me résumer en une seule scène, ce serait celle où…',
+    'Peu de gens savent que, derrière mon calme apparent, se cache…',
+    'Le jour où j\'ai compris qui j\'étais vraiment, c\'est parce que…',
+    'On me demande souvent pourquoi je…',
+    'Il y a une chose que je garde secrète depuis toujours : …'
+  ],
+  Renart:[
+    'Ce jour-là, Renart avait faim, et une idée germait déjà dans son esprit rusé.',
+    '« Cher cousin, lui dit Renart avec un sourire trop aimable, j\'ai justement pensé à toi… »',
+    'Personne n\'avait remarqué le piège, sauf peut-être celui qui l\'avait tendu.',
+    'L\'animal le plus naïf de la forêt s\'apprêtait, une fois de plus, à tomber dans le panneau.',
+    'Il suffit parfois d\'un mensonge bien tourné pour faire plier le plus fort.'
+  ],
+  Perceval:[
+    'Le jeune homme n\'avait jamais tenu une épée, et pourtant son destin l\'appelait déjà.',
+    'Devant lui se dressait une épreuve que nul chevalier n\'avait encore surmontée.',
+    '« Prouve ta valeur », lui dit le vieil homme, « et la Table Ronde t\'ouvrira ses portes. »',
+    'Le chemin de la quête était semé d\'embûches, mais l\'honneur ne recule jamais.',
+    'Ce fut au cœur de la forêt qu\'il rencontra l\'inconnu qui allait changer sa vie.'
+  ],
+  Cape:[
+    'Le plan était risqué, mais un bon mot valait parfois mieux qu\'un bon coup d\'épée.',
+    '« Vous croyez m\'avoir piégé ? » répliqua-t-il en souriant. « C\'est moi qui vous tenais. »',
+    'Il ne restait qu\'une issue : bluffer, et espérer que l\'adversaire n\'y voie que du feu.',
+    'L\'aventure commença par une simple lettre glissée sous une porte, au cœur de la nuit.',
+    'Un duel de mots valait bien un duel d\'épées — et celui-ci n\'était pas encore terminé.'
+  ],
+  Poesie:[
+    'Je ferme les yeux, et déjà un autre monde s\'ouvre devant moi…',
+    'Il suffit d\'un souffle de vent pour m\'emporter loin d\'ici.',
+    'Sous mes pas, le chemin se transforme en horizon.',
+    'Le silence, parfois, raconte plus de voyages que n\'importe quel mot.',
+    'Quelque part, entre le ciel et la mer, un pays m\'attend.'
+  ],
+  Avare:[
+    '« Mon or ! Mon cher or ! » hurlait-il en courant à moitié nu dans le jardin.',
+    'Personne, dans cette maison, n\'osait dépenser un sou sans son accord.',
+    'Le valet regarda son maître compter, pour la centième fois, les mêmes pièces.',
+    '« Un mariage sans dot ? Autant me demander de respirer sans air ! »',
+    'La ruse des deux jeunes gens allait mettre à l\'épreuve toute la cupidité du vieil homme.'
+  ]
 };
-function loadFicheSequence(){
-  const k=document.getElementById('fiche-sequence').value;
-  if(!k||!FICHE_PRESETS[k])return;
-  const p=FICHE_PRESETS[k];
-  document.getElementById('f-entree').value=p.entree;
-  document.getElementById('f-c1').value=p.c1;
-  document.getElementById('f-c2').value=p.c2;
-  document.getElementById('f-c3').value=p.c3;
-  document.getElementById('f-date').value=new Date().toLocaleDateString('fr-FR');
-  toast('📋 Fiche pré-remplie !');
+
+// Vocabulaire à piocher, par séquence (mots et expressions concrets, pas seulement des noms de notions).
+const VOCAB={
+  Connaitre:['curieux','généreux','timide','passionné','tenace','rêveur','sensible','maladroit','enthousiaste','discret','espiègle','déterminé','la joie','la fierté','la nostalgie','l\'appréhension','un souvenir','un talent','une passion','un trait de caractère'],
+  Renart:['rusé','malicieux','sournois','naïf','orgueilleux','filou','matois','benêt','un stratagème','un piège','la flatterie','la vengeance','duper','berner','flairer','se venger','une morale','un tour','la sagesse','la bêtise'],
+  Perceval:['vaillant','loyal','courageux','preux','intrépide','noble','audacieux','un chevalier','une quête','une épreuve','l\'honneur','la prouesse','un écu','un destrier','l\'adoubement','affronter','triompher','se dépasser','un serment','la Table Ronde'],
+  Cape:['rusé','habile','audacieux','malicieux','un stratagème','une répartie','un duel','un complot','une évasion','un mensonge habile','un bluff','une alliance','une trahison','déjouer','ruser','s\'échapper','manigancer','répliquer','persifler','rétorquer'],
+  Poesie:['l\'azur','frémir','un murmure','l\'horizon','une senteur','un éclat','un songe','l\'errance','le silence','les embruns','scintiller','s\'évader','vagabonder','contempler','un ailleurs','la lumière','l\'ombre','le vent','une mélodie','un rêve'],
+  Avare:['la cupidité','l\'avarice','ladre','pingre','avare','dupe','un quiproquo','la tromperie','hériter','une dot','des écus','un coffre','économiser','dilapider','soupçonner','se méfier','un valet','un maître','la comédie','le ridicule']
+};
+
+// Conseils d'organisation par type de texte (indépendants de la séquence).
+const ORGA_TIPS={
+  Narratif:[
+    'Situation initiale : présente le lieu, le temps et le(s) personnage(s) avant que tout bascule.',
+    'Élément perturbateur : introduis un problème, une rencontre ou un événement qui lance l\'action.',
+    'Péripéties : enchaîne 2 ou 3 actions ou obstacles, dans un ordre logique.',
+    'Dénouement : résous le problème posé au début.',
+    'Situation finale : referme l\'histoire en une ou deux phrases.'
+  ],
+  Descriptif:[
+    'Choisis un ordre clair : de haut en bas, de loin en près, du général au détail…',
+    'Utilise les 5 sens (vue, ouïe, odorat, toucher, goût) pour rendre la description vivante.',
+    'Varie les verbes d\'état (être, sembler, paraître) et les compléments du nom.',
+    'Évite les simples énumérations : relie tes idées par des connecteurs spatiaux.',
+    'Termine par une impression générale ou une émotion que dégage ce que tu décris.'
+  ],
+  Explicatif:[
+    'Pose clairement la question ou le phénomène que tu vas expliquer.',
+    'Avance tes explications dans un ordre logique (cause → conséquence).',
+    'Utilise des connecteurs logiques : parce que, donc, ainsi, c\'est pourquoi…',
+    'Illustre avec un exemple concret si possible.',
+    'Conclus en résumant l\'essentiel en une phrase.'
+  ],
+  Argumentatif:[
+    'Annonce clairement ta thèse (ton point de vue) dès le début.',
+    'Développe 2 ou 3 arguments, chacun accompagné d\'un exemple.',
+    'Utilise des connecteurs logiques : car, en effet, de plus, cependant…',
+    'Anticipe une objection et réponds-y si tu veux convaincre davantage.',
+    'Termine par une phrase de conclusion qui rappelle ta position.'
+  ],
+  Injonctif:[
+    'Utilise l\'impératif présent ou l\'infinitif pour donner tes consignes.',
+    'Organise tes étapes dans l\'ordre chronologique (d\'abord, ensuite, enfin…).',
+    'Sois précis et concis : une consigne = une action claire.',
+    'Pense à numéroter ou à aérer tes étapes pour la lisibilité.',
+    'Termine par le résultat attendu si l\'on suit bien tes instructions.'
+  ]
+};
+
+function escJsStr(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');}
+function copyToClip(text){
+  navigator.clipboard.writeText(text).then(()=>toast('📋 Copié !')).catch(()=>toast('⚠️ Impossible de copier',true));
 }
-function resetFiche(){
-  ['f-auteur','f-classe','f-date','f-entree','f-niveau','f-c1','f-c2','f-c3','f-idees','f-plan','f-retour-qui','f-retour','f-phrase-pref'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.querySelectorAll('#fiche-print-area input[type=checkbox]').forEach(cb=>cb.checked=false);
-  document.getElementById('fiche-sequence').value='';
+function renderAide(){
+  const entree=document.getElementById('aide-entree')?.value||'';
+  const type=document.getElementById('aide-type')?.value||'';
+  const temps=document.getElementById('aide-temps')?.value||'';
+
+  const themesWrap=document.getElementById('aide-themes');
+  const amorcesWrap=document.getElementById('aide-amorces');
+  const vocabWrap=document.getElementById('aide-vocab');
+  const orgaWrap=document.getElementById('aide-orga');
+  const tempsWrap=document.getElementById('aide-temps-tip');
+  if(!themesWrap)return;
+
+  if(!entree){
+    themesWrap.innerHTML='<p class="aide-empty">Choisis une séquence ci-dessus pour voir apparaître des idées de thèmes.</p>';
+    amorcesWrap.innerHTML='<p class="aide-empty">Choisis une séquence pour voir des amorces.</p>';
+    vocabWrap.innerHTML='<p class="aide-empty">Choisis une séquence pour voir du vocabulaire.</p>';
+  }else{
+    themesWrap.innerHTML=(THEMES_SUGG[entree]||[]).map(t=>
+      `<button type="button" class="sugg-chip-light" onclick="copyToClip('${escJsStr(t)}')">${esc(t)}</button>`).join('');
+    amorcesWrap.innerHTML=(AMORCES[entree]||[]).map(a=>
+      `<div class="aide-card"><span>${esc(a)}</span><button class="btn btn-secondary btn-sm" onclick="copyToClip('${escJsStr(a)}')">📋 Copier</button></div>`).join('');
+    vocabWrap.innerHTML=(VOCAB[entree]||[]).map(v=>
+      `<span class="sugg-chip-light" style="cursor:pointer" onclick="copyToClip('${escJsStr(v)}')">${esc(v)}</span>`).join('');
+  }
+
+  if(!type){
+    orgaWrap.innerHTML='<p class="aide-empty">Choisis un type de texte ci-dessus pour voir des conseils d\'organisation.</p>';
+  }else{
+    orgaWrap.innerHTML='<ol class="aide-orga-list">'+(ORGA_TIPS[type]||[]).map(t=>`<li>${esc(t)}</li>`).join('')+'</ol>';
+  }
+
+  if(!temps){
+    tempsWrap.innerHTML='';
+  }else if(temps==='recit'){
+    tempsWrap.innerHTML='<div class="aide-tip">⏳ Ton texte est au <b>récit</b> : utilise le passé simple pour les actions principales et l\'imparfait pour les descriptions et les habitudes. Attention à ne pas mélanger avec le présent !</div>';
+  }else{
+    tempsWrap.innerHTML='<div class="aide-tip">🗣️ Ton texte est au <b>discours</b> : le présent domine. Pense aussi au passé composé ou au futur si tu évoques un souvenir ou un projet.</div>';
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -1912,6 +1945,17 @@ function previewCard(id){
 // ══════════════════════════════════════════════════════
 // EXPORT PDF CARTES A6
 // ══════════════════════════════════════════════════════
+// Taille de police (en pt, pour jsPDF) adaptée à la longueur du texte, pour que le
+// texte complet tienne toujours sur la face recto de la carte imprimée (A6).
+function pdfFontSizeForLen(len){
+  if(len<=250)return 7.2;
+  if(len<=350)return 6.6;
+  if(len<=450)return 6.0;
+  if(len<=550)return 5.4;
+  if(len<=650)return 4.9;
+  if(len<=750)return 4.5;
+  return 4.1;
+}
 function exportPDF(){
   const fc=document.getElementById('export-classe').value;
   const fs=document.getElementById('export-status').value;
@@ -1937,9 +1981,15 @@ function exportPDF(){
         doc.text((card.numero?`N°${card.numero} — `:'')+(card.titre||'').substring(0,30),4,8);
         doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...nc);
         doc.text(stars,W-4,8,{align:'right'});
-        doc.setFont('helvetica','normal');doc.setFontSize(6.2);doc.setTextColor(26,26,46);
+        const rawLen=(card.texte||'').length;
+        const pdfFs=pdfFontSizeForLen(rawLen);
+        const pdfLH=1.3;
+        doc.setFont('helvetica','normal');doc.setFontSize(pdfFs);doc.setTextColor(26,26,46);
         const tLines=doc.splitTextToSize(card.texte||'',W-8);
-        doc.text(tLines.slice(0,20),4,16.5,{lineHeightFactor:1.42});
+        const availH=(H-24)-16.5-2; // espace dispo avant le bandeau des contraintes
+        const lineHmm=pdfFs*0.3528*pdfLH;
+        const maxLines=Math.max(1,Math.floor(availH/lineHmm));
+        doc.text(tLines.slice(0,maxLines),4,16.5,{lineHeightFactor:pdfLH});
         const py=H-24;
         doc.setFillColor(235,230,215);doc.rect(2,py,W-4,21,'F');
         doc.setDrawColor(...nc);doc.setLineWidth(.5);doc.rect(2,py,W-4,21);
@@ -2012,6 +2062,11 @@ function doImportJSON(input){
 // UTILITAIRES
 // ══════════════════════════════════════════════════════
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// Compte les caractères "utiles" d'un texte : lettres et chiffres uniquement,
+// espaces et ponctuation exclus (règle de longueur du texte élève : 200 à 500).
+function meaningfulCharCount(str){
+  return (str||'').replace(/[^\p{L}\p{N}]/gu,'').length;
+}
 function toast(msg,isErr=false){
   const el=document.getElementById('toast');el.textContent=msg;
   el.className='show'+(isErr?' err':'');
