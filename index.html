@@ -415,7 +415,7 @@ textarea{resize:vertical;line-height:1.55}
   <div class="panel">
     <div class="panel-title">📜 Ton texte (verso) <span class="sub" id="char-count"></span></div>
     <div class="form-group">
-      <label>Rédige ton texte (entre 200 et 500 caractères utiles, hors espaces et ponctuation)</label>
+      <label>Rédige ton texte (entre 200 et 700 caractères utiles, hors espaces et ponctuation)</label>
       <textarea id="e-texte" rows="11" placeholder="Commence ici ton texte…&#10;Pense à inclure tes contraintes !" oninput="updatePreview();countChars()"></textarea>
     </div>
   </div>
@@ -1074,34 +1074,41 @@ function getFormData(){
     illustration:illustrationData
   };
 }
-// Renvoie une taille de police adaptée à la longueur du texte pour que celui-ci
-// tienne toujours en entier sur la carte, quelle que soit sa longueur (200-500 car. utiles).
-function versoFontSize(rawLen){
-  if(rawLen<=250)return '.68rem';
-  if(rawLen<=350)return '.62rem';
-  if(rawLen<=450)return '.58rem';
-  if(rawLen<=550)return '.53rem';
-  if(rawLen<=650)return '.5rem';
-  if(rawLen<=750)return '.46rem';
-  return '.42rem';
+// Ajuste dynamiquement la taille du texte du recto pour qu'il remplisse au mieux
+// l'espace disponible sur la carte, quelle que soit sa longueur (200-700 car. utiles) :
+// recherche par dichotomie de la plus grande taille qui tient sans déborder.
+function autoFitVersoText(cardEl){
+  const el=cardEl.querySelector('.verso-texte');
+  if(!el)return;
+  const fits=()=>el.scrollHeight<=el.clientHeight+1;
+  let lo=7,hi=17;
+  el.style.fontSize=hi+'px';
+  if(fits()){return;} // la plus grande taille tient déjà : on la garde
+  el.style.fontSize=lo+'px';
+  if(!fits()){return;} // même la plus petite taille déborde : on la garde quand même
+  while(hi-lo>0.4){
+    const mid=(lo+hi)/2;
+    el.style.fontSize=mid+'px';
+    if(fits())lo=mid;else hi=mid;
+  }
+  el.style.fontSize=lo+'px';
 }
 function starsHtml(n,sz='1rem'){
   const col={0:'rgba(247,243,233,.3)',1:'#c8a880',2:'#c8d4e0',3:'#f0d080'};
   return `<span style="color:${col[n]||'#ccc'};font-size:${sz};letter-spacing:2px">${'★'.repeat(n||0)||'—'}</span>`;
 }
-function updatePreview(){const d=getFormData();renderRecto(d);renderVerso(d);document.getElementById('prev-recto').className=`card-face recto n${d.niveau}`;document.getElementById('prev-verso').className=`card-face verso n${d.niveau}`;}
+function updatePreview(){const d=getFormData();renderRecto(d);renderVerso(d);document.getElementById('prev-recto').className=`card-face recto n${d.niveau}`;document.getElementById('prev-verso').className=`card-face verso n${d.niveau}`;autoFitVersoText(document.getElementById('prev-recto'));}
 // RECTO = face publique : le texte à lire à voix haute + les contraintes annoncées à retrouver dedans
 function renderRecto(d){
   const el=document.getElementById('prev-recto');
   const titre=d.titre||'[ Titre ]';
   const texte=d.texte||'[ Ton texte apparaîtra ici… ]';
-  const fsize=versoFontSize(texte.length);
   const tempsLabel = d.temps==='recit' ? '⏳ Récit (passé simple / imparfait)' : d.temps==='discours' ? '🗣️ Discours (présent)' : '';
   const tempsTag = tempsLabel ? `<span class="prouver-tag" style="background:rgba(74,44,122,.18);color:#3a2260;border:1px solid #7a3a9a">${esc(tempsLabel)}</span>` : '';
   const cTags=d.contraintes.map(c=>`<span class="prouver-tag ${(C_TYPES[c.type]||C_TYPES.grammaire).ptcls}">${esc(c.val.substring(0,30))}</span>`).join('');
   const tTags=d.themes.map(t=>`<span class="theme-tag">${esc(t.substring(0,24))}</span>`).join('');
   el.innerHTML=`<div class="verso-header"><div class="verso-titre">${esc(titre)}</div>${starsHtml(d.niveau,'.82rem')}</div>
-    <div class="verso-texte" style="font-size:${fsize}">${esc(texte)}</div>
+    <div class="verso-texte">${esc(texte)}</div>
     <div class="verso-prouver">
       <div class="verso-prouver-title">🎯 Contraintes à retrouver dans le texte :</div>
       <div class="verso-prouver-tags">${tempsTag}${cTags||(tempsTag?'':'<span style="font-size:.6rem;color:rgba(26,26,46,.4);font-style:italic">Aucune contrainte choisie</span>')}</div>
@@ -1128,9 +1135,9 @@ function countChars(){
   const el=document.getElementById('char-count');
   let color, statut;
   if(meaningful<200){color='#ff8899';statut=`encore ${200-meaningful} avant le minimum`;}
-  else if(meaningful>500){color='#ff8899';statut=`${meaningful-500} de trop (max 500)`;}
+  else if(meaningful>700){color='#ff8899';statut=`${meaningful-700} de trop (max 700)`;}
   else{color='#52b788';statut='✓ longueur correcte';}
-  el.textContent=`${meaningful}/500 car. utiles (hors espaces/ponctuation) — ${statut} · ~${lines} ligne(s)`;
+  el.textContent=`${meaningful}/700 car. utiles (hors espaces/ponctuation) — ${statut} · ~${lines} ligne(s)`;
   el.style.color=color;
 }
 
@@ -1147,7 +1154,7 @@ function submitCard(){
   {
     const meaningful=meaningfulCharCount(d.texte);
     if(meaningful<200)return toast(`⚠️ Texte trop court : ${meaningful}/200 caractères utiles minimum (hors espaces et ponctuation)`,true);
-    if(meaningful>500)return toast(`⚠️ Texte trop long : ${meaningful}/500 caractères utiles maximum (hors espaces et ponctuation)`,true);
+    if(meaningful>700)return toast(`⚠️ Texte trop long : ${meaningful}/700 caractères utiles maximum (hors espaces et ponctuation)`,true);
   }
   if(!d.contraintes.length)return toast('⚠️ Choisis au moins 1 contrainte',true);
   const incomplete=contraintes.some(c=>!c.val||(c.val==='__custom__'&&!c.customVal));
@@ -1945,16 +1952,18 @@ function previewCard(id){
 // ══════════════════════════════════════════════════════
 // EXPORT PDF CARTES A6
 // ══════════════════════════════════════════════════════
-// Taille de police (en pt, pour jsPDF) adaptée à la longueur du texte, pour que le
-// texte complet tienne toujours sur la face recto de la carte imprimée (A6).
-function pdfFontSizeForLen(len){
-  if(len<=250)return 7.2;
-  if(len<=350)return 6.6;
-  if(len<=450)return 6.0;
-  if(len<=550)return 5.4;
-  if(len<=650)return 4.9;
-  if(len<=750)return 4.5;
-  return 4.1;
+// Cherche, par essais successifs, la plus grande taille de police (en pt) qui permet
+// au texte complet de tenir dans l'espace disponible sur la carte imprimée (A6) —
+// pour que le texte remplisse au mieux l'espace, quelle que soit sa longueur.
+function pdfFitFontSize(doc,text,maxWidthMm,availHmm,minPt,maxPt,lineHeightFactor){
+  for(let fs=maxPt; fs>=minPt; fs-=0.15){
+    doc.setFontSize(fs);
+    const lines=doc.splitTextToSize(text||'',maxWidthMm);
+    const lineHmm=fs*0.3528*lineHeightFactor;
+    if(lines.length*lineHmm<=availHmm)return{fs,lines};
+  }
+  doc.setFontSize(minPt);
+  return{fs:minPt,lines:doc.splitTextToSize(text||'',maxWidthMm)};
 }
 function exportPDF(){
   const fc=document.getElementById('export-classe').value;
@@ -1981,15 +1990,11 @@ function exportPDF(){
         doc.text((card.numero?`N°${card.numero} — `:'')+(card.titre||'').substring(0,30),4,8);
         doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...nc);
         doc.text(stars,W-4,8,{align:'right'});
-        const rawLen=(card.texte||'').length;
-        const pdfFs=pdfFontSizeForLen(rawLen);
         const pdfLH=1.3;
-        doc.setFont('helvetica','normal');doc.setFontSize(pdfFs);doc.setTextColor(26,26,46);
-        const tLines=doc.splitTextToSize(card.texte||'',W-8);
         const availH=(H-24)-16.5-2; // espace dispo avant le bandeau des contraintes
-        const lineHmm=pdfFs*0.3528*pdfLH;
-        const maxLines=Math.max(1,Math.floor(availH/lineHmm));
-        doc.text(tLines.slice(0,maxLines),4,16.5,{lineHeightFactor:pdfLH});
+        const{fs:pdfFs,lines:tLines}=pdfFitFontSize(doc,card.texte,W-8,availH,4.0,9.5,pdfLH);
+        doc.setFont('helvetica','normal');doc.setFontSize(pdfFs);doc.setTextColor(26,26,46);
+        doc.text(tLines,4,16.5,{lineHeightFactor:pdfLH});
         const py=H-24;
         doc.setFillColor(235,230,215);doc.rect(2,py,W-4,21,'F');
         doc.setDrawColor(...nc);doc.setLineWidth(.5);doc.rect(2,py,W-4,21);
@@ -2063,7 +2068,7 @@ function doImportJSON(input){
 // ══════════════════════════════════════════════════════
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 // Compte les caractères "utiles" d'un texte : lettres et chiffres uniquement,
-// espaces et ponctuation exclus (règle de longueur du texte élève : 200 à 500).
+// espaces et ponctuation exclus (règle de longueur du texte élève : 200 à 700).
 function meaningfulCharCount(str){
   return (str||'').replace(/[^\p{L}\p{N}]/gu,'').length;
 }
