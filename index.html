@@ -443,7 +443,7 @@ textarea{resize:vertical;line-height:1.55}
   <div class="panel">
     <div class="panel-title">📜 Ton texte (verso) <span class="sub" id="char-count"></span></div>
     <div class="form-group">
-      <label>Rédige ton texte (entre 200 et 700 caractères utiles, hors espaces et ponctuation)</label>
+      <label>Rédige ton texte (entre 200 et 1500 caractères utiles, hors espaces et ponctuation)</label>
       <textarea id="e-texte" rows="11" placeholder="Commence ici ton texte…&#10;Pense à inclure tes contraintes !" oninput="updatePreview();countChars()"></textarea>
     </div>
   </div>
@@ -1108,13 +1108,13 @@ function getFormData(){
   };
 }
 // Ajuste dynamiquement la taille du texte du recto pour qu'il remplisse au mieux
-// l'espace disponible sur la carte, quelle que soit sa longueur (200-700 car. utiles) :
+// l'espace disponible sur la carte, quelle que soit sa longueur (200-1500 car. utiles) :
 // recherche par dichotomie de la plus grande taille qui tient sans déborder.
 function autoFitVersoText(cardEl){
   const el=cardEl.querySelector('.verso-texte');
   if(!el)return;
   const fits=()=>el.scrollHeight<=el.clientHeight+1;
-  let lo=7,hi=17;
+  let lo=5.5,hi=17;
   el.style.fontSize=hi+'px';
   if(fits()){return;} // la plus grande taille tient déjà : on la garde
   el.style.fontSize=lo+'px';
@@ -1168,9 +1168,9 @@ function countChars(){
   const el=document.getElementById('char-count');
   let color, statut;
   if(meaningful<200){color='#ff8899';statut=`encore ${200-meaningful} avant le minimum`;}
-  else if(meaningful>700){color='#ff8899';statut=`${meaningful-700} de trop (max 700)`;}
+  else if(meaningful>1500){color='#ff8899';statut=`${meaningful-1500} de trop (max 1500)`;}
   else{color='#52b788';statut='✓ longueur correcte';}
-  el.textContent=`${meaningful}/700 car. utiles (hors espaces/ponctuation) — ${statut} · ~${lines} ligne(s)`;
+  el.textContent=`${meaningful}/1500 car. utiles (hors espaces/ponctuation) — ${statut} · ~${lines} ligne(s)`;
   el.style.color=color;
 }
 
@@ -1188,7 +1188,7 @@ function submitCard(){
   {
     const meaningful=meaningfulCharCount(d.texte);
     if(meaningful<200)return toast(`⚠️ Texte trop court : ${meaningful}/200 caractères utiles minimum (hors espaces et ponctuation)`,true);
-    if(meaningful>700)return toast(`⚠️ Texte trop long : ${meaningful}/700 caractères utiles maximum (hors espaces et ponctuation)`,true);
+    if(meaningful>1500)return toast(`⚠️ Texte trop long : ${meaningful}/1500 caractères utiles maximum (hors espaces et ponctuation)`,true);
   }
   if(!d.contraintes.length)return toast('⚠️ Choisis au moins 1 contrainte',true);
   const incomplete=contraintes.some(c=>!c.val||(c.val==='__custom__'&&!c.customVal));
@@ -2112,7 +2112,7 @@ function exportPDF(){
         doc.text(stars,W-4,8,{align:'right'});
         const pdfLH=1.3;
         const availH=(H-24)-16.5-2; // espace dispo avant le bandeau des contraintes
-        const{fs:pdfFs,lines:tLines}=pdfFitFontSize(doc,card.texte,W-8,availH,4.0,9.5,pdfLH);
+        const{fs:pdfFs,lines:tLines}=pdfFitFontSize(doc,card.texte,W-8,availH,3.2,9.5,pdfLH);
         doc.setFont('helvetica','normal');doc.setFontSize(pdfFs);doc.setTextColor(26,26,46);
         doc.text(tLines,4,16.5,{lineHeightFactor:pdfLH});
         const py=H-24;
@@ -2188,7 +2188,7 @@ function doImportJSON(input){
 // ══════════════════════════════════════════════════════
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 // Compte les caractères "utiles" d'un texte : lettres et chiffres uniquement,
-// espaces et ponctuation exclus (règle de longueur du texte élève : 200 à 700).
+// espaces et ponctuation exclus (règle de longueur du texte élève : 200 à 1500).
 function meaningfulCharCount(str){
   return (str||'').replace(/[^\p{L}\p{N}]/gu,'').length;
 }
