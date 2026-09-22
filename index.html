@@ -1199,7 +1199,8 @@ function submitCard(){
     // on conserve son numéro et sa date d'envoi initiale, et on repasse le statut en attente.
     const existing=deck.find(c=>c.id===editingCardId);
     const card={...d,id:editingCardId,
-      numero:existing?.numero, dateEnvoi:existing?.dateEnvoi||new Date().toLocaleDateString('fr-FR'),
+      numero:(existing&&typeof existing.numero==='number')?existing.numero:nextCardNumero(),
+      dateEnvoi:existing?.dateEnvoi||new Date().toLocaleDateString('fr-FR'),
       dateModif:new Date().toLocaleDateString('fr-FR'), statut:'attente', commentaire:''};
     fbDB.ref('cards/'+card.id).set(card).then(()=>{
       toast(`✅ Carte N°${card.numero} mise à jour et renvoyée !`);setTimeout(resetForm,800);
@@ -1250,12 +1251,12 @@ function renderLookup(){
   if(!wrap)return;
   const q=(document.getElementById('lookup-nom')?.value||'').trim().toLowerCase();
   if(!q){wrap.innerHTML='';return;}
-  const matches=deck.filter(c=>c.auteur && c.auteur.toLowerCase().includes(q) && typeof c.numero==='number');
+  const matches=deck.filter(c=>c.auteur && c.auteur.toLowerCase().includes(q));
   if(!matches.length){wrap.innerHTML='<p class="aide-empty" style="margin:0">Aucune carte trouvée pour ce nom.</p>';return;}
   const sIcon={attente:'⏳',validee:'✅',rejetee:'↩️'};
-  wrap.innerHTML=matches.sort((a,b)=>a.numero-b.numero).map(c=>
+  wrap.innerHTML=matches.sort((a,b)=>(typeof a.numero==='number'?a.numero:9999)-(typeof b.numero==='number'?b.numero:9999)).map(c=>
     `<button type="button" class="sugg-chip" style="border-color:rgba(201,150,58,.6)" onclick="loadCardForEdit('${c.id}')">
-      ${sIcon[c.statut]||''} N°${c.numero} — « ${esc((c.titre||'').substring(0,26))} »
+      ${sIcon[c.statut]||''} ${typeof c.numero==='number'?`N°${c.numero}`:'(sans numéro)'} — « ${esc((c.titre||'').substring(0,26))} »
     </button>`).join('');
 }
 function loadCardForEdit(id){
@@ -1289,10 +1290,10 @@ function loadCardForEdit(id){
   document.getElementById('lookup-cancel-btn').style.display='inline-flex';
   const banner=document.getElementById('editing-banner');
   banner.style.display='block';
-  banner.innerHTML=`✏️ Tu modifies actuellement la carte <b>N°${card.numero}</b>.`+
+  banner.innerHTML=`✏️ Tu modifies actuellement la carte ${typeof card.numero==='number'?`<b>N°${card.numero}</b>`:'<b>(elle recevra un numéro à l\'envoi)</b>'}.`+
     (card.statut==='rejetee'&&card.commentaire?` Message du/de la professeur·e : <i>« ${esc(card.commentaire)} »</i>`:'');
   document.querySelector('#view-eleve').scrollIntoView({behavior:'smooth'});
-  toast(`✏️ Carte N°${card.numero} chargée — modifie-la puis renvoie-la`);
+  toast(`✏️ Carte chargée — modifie-la puis renvoie-la`);
 }
 function cancelEdit(){
   resetForm();
