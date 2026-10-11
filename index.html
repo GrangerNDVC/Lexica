@@ -183,8 +183,8 @@ textarea{resize:vertical;line-height:1.55}
 .projection-overlay.active{display:block}
 .proj-close{position:fixed;top:16px;right:16px;background:var(--red);color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:1.3rem;cursor:pointer;z-index:9001}
 .empty-state{text-align:center;padding:50px 20px;color:var(--silver-lt)}
-#toast{position:fixed;bottom:24px;right:24px;background:var(--gold);color:var(--ink);padding:11px 20px;border-radius:6px;font-weight:700;font-size:.85rem;box-shadow:0 4px 18px rgba(0,0,0,.4);transform:translateY(70px);opacity:0;transition:all .3s;z-index:9999;max-width:300px}
-#toast.show{transform:translateY(0);opacity:1}
+#toast{position:fixed;top:14px;left:50%;background:var(--gold);color:var(--ink);padding:12px 22px;border-radius:6px;font-weight:700;font-size:.9rem;box-shadow:0 4px 18px rgba(0,0,0,.5);transform:translate(-50%,-90px);opacity:0;transition:all .3s;z-index:99999;max-width:min(560px,92vw);text-align:center;pointer-events:none}
+#toast.show{transform:translate(-50%,0);opacity:1}
 #toast.err{background:var(--red);color:#fff}
 @media(max-width:700px){.cols-2,.cols-3,.cols-4{grid-template-columns:1fr}.card-face{width:100%;height:auto;aspect-ratio:380/270}.score-board{grid-template-columns:1fr}.contrainte-slot{grid-template-columns:1fr auto}}
 @media print{header,.nav-tabs,.btn-row,.btn{display:none!important}.fiche-projet{box-shadow:none;border:1px solid #ccc}}
@@ -706,15 +706,20 @@ textarea{resize:vertical;line-height:1.55}
   <div id="prof-auth-panel" style="max-width:360px;margin:0 auto">
     <div class="panel">
       <div class="panel-title">🔑 Accès Professeur</div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label>E-mail</label>
+        <input type="text" id="prof-email" autocomplete="username" placeholder="ton.adresse@exemple.fr" onkeydown="if(event.key==='Enter')document.getElementById('prof-pwd').focus()">
+      </div>
       <div class="form-group" style="margin-bottom:14px">
         <label>Mot de passe</label>
-        <input type="password" id="prof-pwd" placeholder="•••••••" onkeydown="if(event.key==='Enter')checkPwd()">
+        <input type="password" id="prof-pwd" autocomplete="current-password" placeholder="•••••••" onkeydown="if(event.key==='Enter')checkPwd()">
       </div>
       <button class="btn btn-primary" onclick="checkPwd()">Entrer</button>
       <p style="font-size:.72rem;color:var(--silver-lt);margin-top:10px">Accès réservé au/à la professeur·e.</p>
     </div>
   </div>
   <div id="prof-content" style="display:none">
+    <div style="text-align:right;margin-bottom:10px"><button class="btn btn-secondary btn-sm" onclick="lockProf()">🔒 Me déconnecter</button></div>
     <div class="panel">
       <div class="panel-title">🗂️ Deck de classe</div>
       <div class="deck-toolbar">
@@ -753,8 +758,14 @@ textarea{resize:vertical;line-height:1.55}
           <select class="deck-filter" id="export-status" style="border-color:rgba(201,150,58,.6)">
             <option value="validee">Validées seulement</option><option value="">Toutes</option></select></div>
       </div>
+      <div class="form-group" style="max-width:500px;margin-bottom:6px"><label>Retournement de la feuille à l'impression recto-verso (planche 6 cartes)</label>
+        <select class="deck-filter" id="export-flip" style="border-color:rgba(201,150,58,.6)">
+          <option value="long">Bord long (réglage le plus courant en portrait)</option>
+          <option value="short">Bord court</option></select></div>
+      <p style="font-size:.74rem;color:var(--silver-lt);margin-bottom:6px;line-height:1.4">À l'impression : A4, <b>taille réelle (100 %)</b>, recto-verso. Les versos sont placés en miroir pour tomber exactement derrière chaque recto ; découpe le long des traits de coupe.</p>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="exportPDF()">⬇️ PDF recto-verso A6</button>
+        <button class="btn btn-primary" onclick="exportPDFPlanche()">🗂️ PDF 6 cartes par page (recto-verso)</button>
+        <button class="btn btn-secondary" onclick="exportPDF()">⬇️ PDF recto-verso A6</button>
         <button class="btn btn-secondary" onclick="exportJSON()">💾 Sauvegarder JSON</button>
         <button class="btn btn-secondary" onclick="importJSON()">📂 Charger JSON</button>
         <input type="file" id="json-import-input" accept=".json" style="display:none" onchange="doImportJSON(this)">
@@ -764,6 +775,7 @@ textarea{resize:vertical;line-height:1.55}
 </div>
 
 </main>
+<div style="text-align:center;font-size:.7rem;color:var(--silver-lt);opacity:.6;padding:6px 10px 18px">LEXICA · version du 11/10/2026 · connexion prof par e-mail</div>
 
 <!-- PROJECTION -->
 <div class="projection-overlay" id="projection-overlay">
@@ -777,13 +789,9 @@ textarea{resize:vertical;line-height:1.55}
 // ══════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════
-// Mot de passe prof stocké en hash SHA-256 (jamais en clair dans le code source,
-// même en ouvrant la console ou l'inspecteur les élèves ne peuvent pas le lire).
-const PROF_PWD_HASH = '6d616e5b5db229bffa547956723a9f088c63f8782438a5712cf7321ba462aa04';
-async function sha256Hex(str){
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
-}
+// Connexion prof : compte Firebase (Authentication → Email/Password).
+// Le mot de passe n'est plus dans le code : c'est Firebase qui vérifie, et les règles
+// de la base réservent la validation / le rejet / la suppression à ce compte.
 
 // ══════════════════════════════════════════════════════
 // FIREBASE — deck partagé en temps réel entre tous les postes
@@ -799,6 +807,7 @@ const firebaseConfig = {
 };
 let fbAuth = null, fbDB = null, firebaseOK = false;
 let fbReady = false; // devient true une fois connecté et le premier snapshot reçu
+let deckListenerOn = false; // évite de doubler l'écoute quand la prof se connecte
 
 function requireFirebase(){
   if(!fbDB){toast('⚠️ Service en ligne indisponible pour le moment — réessaie plus tard',true);return false;}
@@ -843,13 +852,18 @@ try{
   fbAuth.onAuthStateChanged(user=>{
     if(!user)return;
     firebaseOK = true;
+    if(deckListenerOn)return;
+    deckListenerOn = true;
     migrateLocalDeckOnce();
     fbDB.ref('cards').on('value', snapshot=>{
       const data = snapshot.val() || {};
-      deck = Object.values(data);
+      // On ignore toute carte dont l'identifiant contient autre chose que lettres/chiffres/_/-
+      // (les identifiants sont insérés dans des boutons du panneau prof).
+      deck = Object.values(data).filter(c=>c && /^[A-Za-z0-9_-]+$/.test(String(c.id||'')));
       fbReady = true;
       refreshActiveView();
     }, err=>{
+      deckListenerOn = false;
       console.error('Firebase deck sync error', err);
       toast('⚠️ Synchronisation impossible — vérifie ta connexion', true);
     });
@@ -1082,10 +1096,31 @@ function updateNiveauLabel(){
 function loadImage(input){
   const file=input.files[0];if(!file)return;
   const r=new FileReader();
-  r.onload=e=>{illustrationData=e.target.result;
-    const p=document.getElementById('illus-preview');p.src=illustrationData;p.style.display='block';
-    document.getElementById('illus-name').textContent=file.name;updatePreview();};
+  r.onload=e=>{
+    compressImage(e.target.result).then(data=>{
+      illustrationData=data;
+      const p=document.getElementById('illus-preview');p.src=illustrationData;p.style.display='block';
+      document.getElementById('illus-name').textContent=file.name;updatePreview();
+    }).catch(()=>toast('⚠️ Image illisible — essaie un JPG ou un PNG',true));
+  };
   r.readAsDataURL(file);
+}
+// Réduit l'image à 800 px max + JPEG qualité 0,7 : ~100 Ko au lieu de plusieurs Mo (limite des règles Firebase)
+function compressImage(dataUrl,maxSide=800,quality=0.7){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const ratio=Math.min(1,maxSide/Math.max(img.width,img.height));
+      const w=Math.max(1,Math.round(img.width*ratio)),h=Math.max(1,Math.round(img.height*ratio));
+      const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+      const ctx=cv.getContext('2d');
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h); // fond blanc (les PNG transparents ne deviennent pas noirs)
+      ctx.drawImage(img,0,0,w,h);
+      resolve(cv.toDataURL('image/jpeg',quality));
+    };
+    img.onerror=()=>reject(new Error('image illisible'));
+    img.src=dataUrl;
+  });
 }
 function removeImage(){
   illustrationData=null;
@@ -1258,7 +1293,8 @@ function submitCard(){
     toast(editingId?'✅ Carte modifiée et renvoyée !':'✅ Carte envoyée au deck !');setTimeout(resetForm,800);
   }).catch(err=>{
     console.error('Envoi carte échoué', err);
-    toast('⚠️ Envoi impossible — vérifie ta connexion et réessaie',true);
+    if(err && err.code==='PERMISSION_DENIED') toast('⚠️ Envoi refusé — ton illustration est peut-être trop lourde : remets-en une autre',true);
+    else toast('⚠️ Envoi impossible — vérifie ta connexion et réessaie',true);
   });
 }
 function resetForm(){
@@ -1811,13 +1847,32 @@ function renderProjectionProgression(){
 // PROF
 // ══════════════════════════════════════════════════════
 async function checkPwd(){
+  if(!requireFirebase())return;
+  const email = (document.getElementById('prof-email').value||'').trim().toLowerCase();
   const entered = document.getElementById('prof-pwd').value;
-  const hash = await sha256Hex(entered);
-  if(hash===PROF_PWD_HASH){
+  if(!email || !entered){toast('⚠️ Entre ton e-mail et ton mot de passe',true);return;}
+  try{
+    // La session s'arrête quand on ferme l'onglet (pas de session prof qui traîne sur un poste partagé)
+    await fbAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+    await fbAuth.signInWithEmailAndPassword(email, entered);
+    localStorage.setItem('lexica_prof_email', email);
+    document.getElementById('prof-pwd').value='';
     document.getElementById('prof-auth-panel').style.display='none';
     document.getElementById('prof-content').style.display='block';
     renderDeck();updateClasseFilters();
-  }else toast('❌ Mot de passe incorrect',true);
+  }catch(err){
+    console.error('Connexion prof échouée', err);
+    const bad=['auth/wrong-password','auth/invalid-credential','auth/invalid-login-credentials','auth/user-not-found','auth/invalid-email'];
+    if(bad.includes(err.code)) toast('❌ E-mail ou mot de passe incorrect',true);
+    else if(err.code==='auth/operation-not-allowed') toast('⚠️ Active « E-mail/Mot de passe » dans Firebase → Authentication',true);
+    else if(err.code==='auth/too-many-requests') toast('⚠️ Trop d\'essais — réessaie dans quelques minutes',true);
+    else toast('⚠️ Connexion impossible ('+(err.code||'erreur')+')',true);
+  }
+}
+function lockProf(){
+  // Déconnecte le compte prof puis recharge : la page repart en mode élève (anonyme)
+  const done=()=>location.reload();
+  if(fbAuth) fbAuth.signOut().then(done,done); else done();
 }
 // saveDeck() n'existe plus : chaque action (valider/rejeter/supprimer/envoyer) écrit
 // directement la carte concernée dans Firebase ; le tableau local `deck` se met à jour
@@ -1861,7 +1916,7 @@ function renderDeck(){
     return `<div class="dcw">
       <div class="dch"><div class="dcn">${card.numero?`<span style="color:var(--gold-lt)">N°${card.numero}</span> — `:''}«&nbsp;${esc(card.titre||'—')}&nbsp;»</div><span class="status-badge ${sCls}">${sLbl}</span></div>
       <div class="dc-meta">
-        <span>👤 Code ${esc(card.auteur)} · 🏫 Classe ${esc(card.classe)} · 📅 ${card.dateEnvoi}</span>
+        <span>👤 Code ${esc(card.auteur)} · 🏫 Classe ${esc(card.classe)} · 📅 ${esc(card.dateEnvoi)}</span>
         <span style="color:${nCol}">${'★'.repeat(card.niveau||2)} N${card.niveau||2} · ${esc(card.entree)}</span>
         <span>${[card.genre,card.type,card.registre].filter(Boolean).map(esc).join(' · ')||'—'}${card.temps?` · ${card.temps==='recit'?'⏳ Récit':'🗣️ Discours'}`:''}</span>
       </div>
@@ -1917,13 +1972,13 @@ function previewCard(id){
   const classif=[c.genre,c.type,c.registre].filter(Boolean).join(' · ')||'—';
   const tempsLbl = c.temps==='recit' ? '⏳ Récit (passé simple/imparfait)' : c.temps==='discours' ? '🗣️ Discours (présent)' : '';
   w.document.write(`<html><body style="font-family:Georgia,serif;background:#f7f3e9;color:#1a1a2e;padding:24px">
-    <h2>${c.numero?`N°${c.numero} — `:''}«&nbsp;${c.titre}&nbsp;» — ${c.auteur} (${c.classe})</h2>
-    <p style="color:#888;font-size:.85rem">${'★'.repeat(c.niveau||2)} · ${c.entree} · ${classif}${tempsLbl?' · '+tempsLbl:''} · ${c.dateEnvoi}</p>
-    ${(c.themes||[]).length?`<p style="font-size:.82rem;color:#5a1a9a"><b>Thèmes :</b> ${c.themes.join(' · ')}</p>`:''}
+    <h2>${c.numero?`N°${esc(c.numero)} — `:''}«&nbsp;${esc(c.titre)}&nbsp;» — ${esc(c.auteur)} (${esc(c.classe)})</h2>
+    <p style="color:#888;font-size:.85rem">${'★'.repeat(c.niveau||2)} · ${esc(c.entree)} · ${esc(classif)}${tempsLbl?' · '+tempsLbl:''} · ${esc(c.dateEnvoi)}</p>
+    ${(c.themes||[]).length?`<p style="font-size:.82rem;color:#5a1a9a"><b>Thèmes :</b> ${c.themes.map(esc).join(' · ')}</p>`:''}
     <hr style="border-color:#c9963a44;margin:12px 0">
-    <pre style="white-space:pre-wrap;line-height:1.7;font-family:Georgia,serif;font-size:.95rem">${c.texte}</pre>
+    <pre style="white-space:pre-wrap;line-height:1.7;font-family:Georgia,serif;font-size:.95rem">${esc(c.texte)}</pre>
     <hr style="border-color:#c9963a44;margin:12px 0">
-    ${(c.contraintes||[]).map(ct=>`<p style="font-size:.82rem"><b>${ct.type} :</b> ${ct.val}</p>`).join('')}
+    ${(c.contraintes||[]).map(ct=>`<p style="font-size:.82rem"><b>${esc(ct.type)} :</b> ${esc(ct.val)}</p>`).join('')}
   </body></html>`);
 }
 
@@ -2039,15 +2094,24 @@ function appliquerAnon(){
     + (warn.length ? '\n\n⚠️ Attention :\n- '+warn.join('\n- ') : '');
   if(!confirm(msg)) return;
   if(!exportCorrespondance()) return;
-  const updates = {};
-  todo.forEach(g=>{
+  // Un élève à la fois : si un seul échoue, les autres passent quand même, et on sait lequel.
+  const jobs = todo.map(g=>{
     const code = anonCodes[g.key];
-    g.ids.forEach(id=>{ updates['cards/'+id+'/auteur']=code; updates['cards/'+id+'/classe']=code.substring(0,2); });
+    const u = {};
+    g.ids.forEach(id=>{ u['cards/'+id+'/auteur']=code; u['cards/'+id+'/classe']=code.substring(0,2); });
+    return fbDB.ref().update(u).then(()=>({g,ok:true})).catch(err=>({g,ok:false,err}));
   });
-  fbDB.ref().update(updates).then(()=>{
-    todo.forEach(g=>delete anonCodes[g.key]);
-    toast(`🔐 ${todo.length} nom(s) remplacé(s) par un code`);
-  }).catch(err=>{ console.error(err); toast('⚠️ Échec — vérifie ta connexion', true); });
+  Promise.all(jobs).then(res=>{
+    const okL = res.filter(r=>r.ok), ko = res.filter(r=>!r.ok);
+    okL.forEach(r=>delete anonCodes[r.g.key]);
+    if(!ko.length){ toast(`🔐 ${okL.length} nom(s) remplacé(s) par un code`); return; }
+    ko.forEach(r=>console.error('Anonymisation refusée pour', r.g.nom, r.err));
+    const denied = ko.some(r=>r.err && r.err.code==='PERMISSION_DENIED');
+    alert(`${okL.length} nom(s) remplacé(s).\n\n❌ Échec pour : ${ko.map(r=>r.g.nom+' ('+r.g.ids.length+' carte'+(r.g.ids.length>1?'s':'')+')').join(', ')}\n\n`
+      + (denied
+        ? 'Motif : refusé par les règles de sécurité Firebase.\n- Vérifie que tu es bien connectée avec ton compte prof (e-mail).\n- Si c\'est le cas : une carte de cet élève dépasse les limites des règles (illustration trop lourde, ou un champ manquant). Ouvre la console (F12) pour le détail.'
+        : 'Motif : problème de connexion ou erreur inattendue (voir la console, F12).'));
+  });
 }
 // ══════════════════════════════════════════════════════
 // EXPORT PDF CARTES A6
@@ -2102,7 +2166,7 @@ function exportPDF(){
         doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...nc);
         doc.text(stars,W-4,9,{align:'right'});
         doc.setFillColor(237,232,216);doc.rect(2,15,W-4,H-40,'F');
-        if(card.illustration){try{doc.addImage(card.illustration,card.illustration.includes('png')?'PNG':'JPEG',2,15,W-4,H-40,undefined,'FAST');}catch{}}
+        if(card.illustration){try{doc.addImage(card.illustration,card.illustration.startsWith('data:image/png')?'PNG':'JPEG',2,15,W-4,H-40,undefined,'FAST');}catch{}}
         doc.setDrawColor(26,26,46);doc.line(2,H-23,W-2,H-23);
         let thx=4;
         (card.themes||[]).forEach(t=>{
@@ -2119,6 +2183,138 @@ function exportPDF(){
       doc.save(`lexica_cartes_${fc||'toutes'}_${new Date().toISOString().slice(0,10)}.pdf`);
       toast(`✅ PDF généré (${cards.length} cartes = ${cards.length*2} pages)`);
     }catch(err){console.error(err);toast('❌ Erreur PDF',true);}
+  },100);
+}
+
+// ══════════════════════════════════════════════════════
+// EXPORT PLANCHES A4 — 6 cartes par page, versos en miroir (économie de plastifieuse / photocopie couleur)
+// ══════════════════════════════════════════════════════
+function pdfSafe(t){
+  return String(t==null?'':t)
+    .replace(/[\u2018\u2019\u02BC]/g,"'").replace(/[\u201C\u201D]/g,'"')
+    .replace(/\u2026/g,'...').replace(/[\u2013\u2014]/g,'-').replace(/[\u00A0\u202F]/g,' ')
+    .replace(/\u0152/g,'OE').replace(/\u0153/g,'oe')
+    .replace(/[^\n\x20-\x7E\u00A1-\u00FF]/g,'');
+}
+function pdfStar(doc,cx,cy,r,col){
+  const pts=[];
+  for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*0.42:r;pts.push([cx+rr*Math.cos(a),cy+rr*Math.sin(a)]);}
+  const rel=[];for(let i=1;i<pts.length;i++)rel.push([pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]]);
+  doc.setFillColor(...col);doc.lines(rel,pts[0][0],pts[0][1],[1,1],'F',true);
+}
+const PL_NCOL={1:[139,96,64],2:[138,155,176],3:[201,150,58]};
+function plFrame(doc,card,x,y,w,h){
+  const nc=PL_NCOL[card.niveau]||PL_NCOL[2];
+  doc.setFillColor(247,243,233);doc.rect(x,y,w,h,'F');
+  doc.setDrawColor(...nc);doc.setLineWidth(1.1);doc.rect(x+.9,y+.9,w-1.8,h-1.8);
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(26,26,46);
+  const titre=pdfSafe((card.numero?`N°${card.numero} - `:'')+(card.titre||''));
+  doc.text(doc.splitTextToSize(titre,w-30)[0]||'',x+4,y+7.6);
+  const n=Math.min(3,card.niveau||1);
+  for(let i=0;i<n;i++) pdfStar(doc,x+w-5-i*4.8,y+6.3,2,nc);
+  doc.setDrawColor(26,26,46);doc.setLineWidth(.35);doc.line(x+2.5,y+11,x+w-2.5,y+11);
+  return nc;
+}
+function plRecto(doc,card,x,y,w,h){
+  const nc=plFrame(doc,card,x,y,w,h);
+  // Contraintes (en bas)
+  const items=[];
+  if(card.temps) items.push(card.temps==='recit'?'[T] Temps : recit (passe simple / imparfait)':'[T] Temps : discours (present)');
+  (card.contraintes||[]).forEach(ct=>items.push((ct.type==='grammaire'?'[G] ':ct.type==='lexique'?'[L] ':ct.type==='conjugaison'?'[C] ':'[?] ')+pdfSafe(ct.val)));
+  doc.setFont('helvetica','normal');doc.setFontSize(5.8);
+  const cLines=[];items.forEach(t=>doc.splitTextToSize(t,w-12).slice(0,2).forEach(l=>cLines.push(l)));
+  const boxH=Math.min(30,6+cLines.length*2.75);
+  const boxY=y+h-2.5-boxH;
+  doc.setFillColor(235,230,215);doc.rect(x+2.5,boxY,w-5,boxH,'F');
+  doc.setDrawColor(...nc);doc.setLineWidth(.45);doc.rect(x+2.5,boxY,w-5,boxH);
+  doc.setFont('helvetica','bold');doc.setFontSize(5.6);doc.setTextColor(...nc);
+  doc.text('CONTRAINTES A RETROUVER :',x+4.5,boxY+3.8);
+  doc.setFont('helvetica','normal');doc.setFontSize(5.8);doc.setTextColor(26,26,46);
+  cLines.slice(0,10).forEach((l,i)=>doc.text(l,x+4.5,boxY+7.4+i*2.75));
+  // Texte : la police s'ajuste pour que tout tienne
+  const texte=pdfSafe(card.texte||'');
+  const ty0=y+13.5, avail=boxY-2-ty0;
+  let fs=7.6,lines=[],lh=0;
+  for(;fs>=4.4;fs-=0.2){
+    doc.setFont('helvetica','normal');doc.setFontSize(fs);
+    lines=doc.splitTextToSize(texte,w-9);lh=fs*0.3528*1.36;
+    if(lines.length*lh<=avail)break;
+  }
+  const maxL=Math.max(1,Math.floor(avail/lh));
+  if(lines.length>maxL){lines=lines.slice(0,maxL);lines[maxL-1]=lines[maxL-1].replace(/\s*\S{0,3}$/,'')+'...';}
+  doc.setTextColor(26,26,46);
+  doc.text(lines,x+4.5,ty0+fs*0.3528,{lineHeightFactor:1.36});
+}
+function plVerso(doc,card,x,y,w,h){
+  const nc=plFrame(doc,card,x,y,w,h);
+  const ix=x+2.5,iy=y+13,iw=w-5,ih=h-13-21;
+  doc.setFillColor(237,232,216);doc.rect(ix,iy,iw,ih,'F');
+  if(card.illustration){
+    try{
+      const type=card.illustration.startsWith('data:image/png')?'PNG':'JPEG';
+      const pr=doc.getImageProperties(card.illustration);
+      const k=Math.min(iw/pr.width,ih/pr.height);
+      const dw=pr.width*k,dh=pr.height*k;
+      doc.addImage(card.illustration,type,ix+(iw-dw)/2,iy+(ih-dh)/2,dw,dh,undefined,'FAST');
+    }catch(e){}
+  }
+  doc.setDrawColor(26,26,46);doc.setLineWidth(.35);doc.line(x+2.5,y+h-20,x+w-2.5,y+h-20);
+  doc.setFont('helvetica','normal');doc.setFontSize(5.4);doc.setTextColor(74,44,122);
+  let thx=x+4;
+  (card.themes||[]).forEach(t=>{
+    const tt='* '+pdfSafe(t).substring(0,26);
+    const tw=doc.getTextWidth(tt)+3;
+    if(thx+tw<x+w-4){doc.text(tt,thx,y+h-15.6);thx+=tw;}
+  });
+  doc.setTextColor(100,95,80);doc.setFontSize(5.8);
+  const classif=pdfSafe([card.genre,card.type,card.registre].filter(Boolean).join(' - ')||'-');
+  doc.text(doc.splitTextToSize(classif+' - '+pdfSafe(card.entree||''),w-8)[0]||'',x+4,y+h-10.8);
+  doc.setFont('helvetica','bold');doc.setTextColor(26,26,46);doc.setFontSize(6.4);
+  doc.text(pdfSafe(card.auteur||'-'),x+4,y+h-5.2);
+  doc.text(pdfSafe(card.classe||'-'),x+w-4,y+h-5.2,{align:'right'});
+}
+function plCropMarks(doc,MX,MY,COLS,ROWS,CW,CH){
+  doc.setDrawColor(0,0,0);doc.setLineWidth(.2);
+  for(let c=0;c<=COLS;c++){const X=MX+c*CW;
+    doc.line(X,MY-4,X,MY-1.2);doc.line(X,MY+ROWS*CH+1.2,X,MY+ROWS*CH+4);}
+  for(let r=0;r<=ROWS;r++){const Y=MY+r*CH;
+    doc.line(MX-4,Y,MX-1.2,Y);doc.line(MX+COLS*CW+1.2,Y,MX+COLS*CW+4,Y);}
+}
+function exportPDFPlanche(){
+  const fc=document.getElementById('export-classe').value;
+  const fs=document.getElementById('export-status').value;
+  const flip=document.getElementById('export-flip')?.value||'long';
+  const cards=deck.filter(c=>(!fc||c.classe===fc)&&(!fs||c.statut===fs))
+    .sort((a,b)=>(a.numero||1e9)-(b.numero||1e9));
+  if(!cards.length){toast('⚠️ Aucune carte à exporter',true);return;}
+  toast(`🖨️ Génération des planches (${cards.length} cartes)…`);
+  setTimeout(()=>{
+    try{
+      const{jsPDF}=window.jspdf;
+      const COLS=2,ROWS=3,PER=COLS*ROWS,CW=96,CH=92;
+      const MX=(210-COLS*CW)/2, MY=(297-ROWS*CH)/2;
+      const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+      const nb=Math.ceil(cards.length/PER);
+      for(let p=0;p<nb;p++){
+        const chunk=cards.slice(p*PER,(p+1)*PER);
+        if(p>0)doc.addPage();
+        chunk.forEach((card,i)=>plRecto(doc,card,MX+(i%COLS)*CW,MY+Math.floor(i/COLS)*CH,CW,CH));
+        plCropMarks(doc,MX,MY,COLS,ROWS,CW,CH);
+        doc.setFont('helvetica','normal');doc.setFontSize(5);doc.setTextColor(120,120,120);
+        doc.text(`LEXICA - planche ${p+1}/${nb} - RECTO (texte)`,MX,5.5);
+        doc.addPage();
+        chunk.forEach((card,i)=>{
+          let col=i%COLS,row=Math.floor(i/COLS);
+          if(flip==='long') col=COLS-1-col; else row=ROWS-1-row;
+          plVerso(doc,card,MX+col*CW,MY+row*CH,CW,CH);
+        });
+        plCropMarks(doc,MX,MY,COLS,ROWS,CW,CH);
+        doc.setFont('helvetica','normal');doc.setFontSize(5);doc.setTextColor(120,120,120);
+        doc.text(`LEXICA - planche ${p+1}/${nb} - VERSO (illustration) - retournement bord ${flip==='long'?'long':'court'}`,MX,5.5);
+      }
+      doc.save(`lexica_planches_${fc||'toutes'}_${new Date().toISOString().slice(0,10)}.pdf`);
+      toast(`✅ ${nb} planche(s) recto-verso générée(s) (${nb*2} pages)`);
+    }catch(err){console.error(err);toast('❌ Erreur PDF : '+(err&&err.message||''),true);}
   },100);
 }
 function exportJSON(){
@@ -2155,7 +2351,8 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function toast(msg,isErr=false){
   const el=document.getElementById('toast');el.textContent=msg;
   el.className='show'+(isErr?' err':'');
-  setTimeout(()=>el.className='',3200);
+  clearTimeout(window._toastT);
+  window._toastT=setTimeout(()=>el.className='',isErr?7000:3200);
 }
 
 // ══════════════════════════════════════════════════════
@@ -2165,6 +2362,7 @@ renderContraintes();
 updatePreview();
 countChars();
 renderHistorique();
+(function(){const m=localStorage.getItem('lexica_prof_email');const el=document.getElementById('prof-email');if(m&&el)el.value=m;})();
 </script>
 </body>
 </html>
