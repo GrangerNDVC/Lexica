@@ -750,7 +750,7 @@ textarea{resize:vertical;line-height:1.55}
     </div>
 
     <div class="panel">
-      <div class="panel-title">🖨️ Export PDF — Impression recto-verso A6</div>
+      <div class="panel-title">🖨️ Exports PDF — planches, correction, fiches prof</div>
       <div class="form-row cols-2" style="max-width:500px;margin-bottom:14px">
         <div class="form-group"><label>Classe</label>
           <select class="deck-filter" id="export-classe" style="border-color:rgba(201,150,58,.6)"><option value="">Toutes</option></select></div>
@@ -775,7 +775,7 @@ textarea{resize:vertical;line-height:1.55}
       <div class="btn-row">
         <button class="btn btn-primary" onclick="exportPDFPlanche()">🗂️ PDF 6 cartes par page (recto-verso)</button>
         <button class="btn btn-purple" onclick="exportFichesProf()">🖨️ Fiches de correction prof (A4, grand format)</button>
-        <button class="btn btn-secondary" onclick="exportPDF()">⬇️ PDF recto-verso A6</button>
+        <button class="btn btn-secondary" onclick="exportPDF()">📄 PDF correction A6 (texte, sans verso)</button>
         <button class="btn btn-secondary" onclick="exportJSON()">💾 Sauvegarder JSON</button>
         <button class="btn btn-secondary" onclick="importJSON()">📂 Charger JSON</button>
         <input type="file" id="json-import-input" accept=".json" style="display:none" onchange="doImportJSON(this)">
@@ -785,7 +785,7 @@ textarea{resize:vertical;line-height:1.55}
 </div>
 
 </main>
-<div style="text-align:center;font-size:.7rem;color:var(--silver-lt);opacity:.6;padding:6px 10px 18px">LEXICA · version du 11/10/2026 (b) · connexion prof par e-mail · fiches prof</div>
+<div style="text-align:center;font-size:.7rem;color:var(--silver-lt);opacity:.6;padding:6px 10px 18px">LEXICA · version du 11/10/2026 (c) · connexion prof par e-mail · fiches prof</div>
 
 <!-- PROJECTION -->
 <div class="projection-overlay" id="projection-overlay">
@@ -2127,72 +2127,25 @@ function appliquerAnon(){
 // EXPORT PDF CARTES A6
 // ══════════════════════════════════════════════════════
 function exportPDF(){
+  // Version « correction » : une page A6 par carte, texte + n° élève + titre + séquence + contraintes (sans verso illustré)
   const fc=document.getElementById('export-classe').value;
   const fs=document.getElementById('export-status').value;
-  const cards=deck.filter(c=>(!fc||c.classe===fc)&&(!fs||c.statut===fs));
+  const fe=document.getElementById('export-entree')?.value||'';
+  const cards=deck.filter(c=>(!fc||c.classe===fc)&&(!fs||c.statut===fs)&&(!fe||c.entree===fe))
+    .sort((a,b)=>String(a.classe||'').localeCompare(String(b.classe||''))||(a.numero||1e9)-(b.numero||1e9)||String(a.auteur||'').localeCompare(String(b.auteur||'')));
   if(!cards.length){toast('⚠️ Aucune carte à exporter',true);return;}
-  toast(`🖨️ Génération PDF (${cards.length} cartes)…`);
+  toast(`🖨️ Génération PDF correction (${cards.length} cartes)…`);
   setTimeout(()=>{
     try{
       const{jsPDF}=window.jspdf;
-      const W=148,H=105;
       const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a6'});
-      const nCol={1:[139,96,64],2:[138,155,176],3:[201,150,58]};
-      const cTypeCol={grammaire:[45,106,79],lexique:[155,35,53],conjugaison:[26,58,106]};
       cards.forEach((card,idx)=>{
         if(idx>0)doc.addPage();
-        const nc=nCol[card.niveau]||nCol[2];
-        const stars='★'.repeat(card.niveau||1);
-        // FACE 1 — RECTO : texte à lire + contraintes à retrouver (face publique du match)
-        doc.setFillColor(247,243,233);doc.rect(0,0,W,H,'F');
-        doc.setDrawColor(...nc);doc.setLineWidth(1.2);doc.rect(.6,.6,W-1.2,H-1.2);
-        doc.setDrawColor(26,26,46);doc.setLineWidth(.4);doc.line(2,12,W-2,12);
-        doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(26,26,46);
-        doc.text((card.numero?`N°${card.numero} — `:'')+(card.titre||'').substring(0,30),4,8);
-        doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...nc);
-        doc.text(stars,W-4,8,{align:'right'});
-        doc.setFont('helvetica','normal');doc.setFontSize(6.2);doc.setTextColor(26,26,46);
-        const tLines=doc.splitTextToSize(card.texte||'',W-8);
-        doc.text(tLines.slice(0,20),4,16.5,{lineHeightFactor:1.42});
-        const py=H-24;
-        doc.setFillColor(235,230,215);doc.rect(2,py,W-4,21,'F');
-        doc.setDrawColor(...nc);doc.setLineWidth(.5);doc.rect(2,py,W-4,21);
-        doc.setFont('helvetica','bold');doc.setFontSize(5.8);doc.setTextColor(...nc);
-        doc.text('CONTRAINTES A RETROUVER :'+(card.temps?`  (temps : ${card.temps==='recit'?'recit':'discours'})`:''),4,py+4.5);
-        doc.setFont('helvetica','normal');doc.setFontSize(5.5);doc.setTextColor(26,26,46);
-        (card.contraintes||[]).forEach((ct,i)=>{
-          const col2x=i%2===0?4:W/2+2;const row2=Math.floor(i/2);
-          const lbl=`${ct.type==='grammaire'?'[G]':ct.type==='lexique'?'[L]':ct.type==='conjugaison'?'[C]':'[?]'} ${ct.val}`;
-          const ls=doc.splitTextToSize(lbl,(W-10)/2);
-          if(row2<2)doc.text(ls[0]||'',col2x,py+9+row2*5.5);
-        });
-        // FACE 2 — VERSO : illustration + identité (pour le classement du/de la professeur·e)
-        doc.addPage();
-        doc.setFillColor(247,243,233);doc.rect(0,0,W,H,'F');
-        doc.setDrawColor(...nc);doc.setLineWidth(1.2);doc.rect(.6,.6,W-1.2,H-1.2);
-        doc.setDrawColor(26,26,46);doc.setLineWidth(.4);doc.line(2,14,W-2,14);
-        doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.setTextColor(26,26,46);
-        doc.text((card.numero?`N°${card.numero} — `:'')+(card.titre||'').substring(0,28),4,9);
-        doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...nc);
-        doc.text(stars,W-4,9,{align:'right'});
-        doc.setFillColor(237,232,216);doc.rect(2,15,W-4,H-40,'F');
-        if(card.illustration){try{doc.addImage(card.illustration,card.illustration.startsWith('data:image/png')?'PNG':'JPEG',2,15,W-4,H-40,undefined,'FAST');}catch{}}
-        doc.setDrawColor(26,26,46);doc.line(2,H-23,W-2,H-23);
-        let thx=4;
-        (card.themes||[]).forEach(t=>{
-          doc.setFontSize(5);doc.setTextColor(74,44,122);
-          const tt=t.substring(0,22);
-          if(thx+doc.getTextWidth(tt)+4<W-4){doc.text('* '+tt,thx,H-18);thx+=doc.getTextWidth('* '+tt)+4;}
-        });
-        doc.setFontSize(5.5);doc.setTextColor(100,95,80);
-        const classif=[card.genre,card.type,card.registre].filter(Boolean).join(' · ')||'—';
-        doc.text(`${classif} · ${card.entree||'—'}`,4,H-13);
-        doc.text(card.auteur||'—',4,H-4);
-        doc.text(card.classe||'—',W-4,H-4,{align:'right'});
+        plRecto(doc,card,0,0,148,105,{meta:true,maxFs:9});
       });
-      doc.save(`lexica_cartes_${fc||'toutes'}_${new Date().toISOString().slice(0,10)}.pdf`);
-      toast(`✅ PDF généré (${cards.length} cartes = ${cards.length*2} pages)`);
-    }catch(err){console.error(err);toast('❌ Erreur PDF',true);}
+      doc.save(`lexica_correction_A6_${fc||'toutes'}_${new Date().toISOString().slice(0,10)}.pdf`);
+      toast(`✅ PDF correction généré (${cards.length} page${cards.length>1?'s':''})`);
+    }catch(err){console.error(err);toast('❌ Erreur PDF : '+(err&&err.message||''),true);}
   },100);
 }
 
@@ -2225,8 +2178,14 @@ function plFrame(doc,card,x,y,w,h){
   doc.setDrawColor(26,26,46);doc.setLineWidth(.35);doc.line(x+2.5,y+11,x+w-2.5,y+11);
   return nc;
 }
-function plRecto(doc,card,x,y,w,h){
+function plRecto(doc,card,x,y,w,h,opt){
+  opt=opt||{};
   const nc=plFrame(doc,card,x,y,w,h);
+  if(opt.meta){
+    const seq=ENTREE_FULL[card.entree]?ENTREE_FULL[card.entree].replace(/^\S+\s/,'').split(' - ')[0]:(card.entree||'-');
+    doc.setFont('helvetica','normal');doc.setFontSize(6.8);doc.setTextColor(70,70,80);
+    doc.text(doc.splitTextToSize(pdfSafe(`Code eleve ${card.auteur||'-'}  |  Classe ${card.classe||'-'}  |  Sequence : ${seq}`),w-8)[0]||'',x+4,y+15.4);
+  }
   // Contraintes (en bas)
   const items=[];
   if(card.temps) items.push(card.temps==='recit'?'[T] Temps : recit (passe simple / imparfait)':'[T] Temps : discours (present)');
@@ -2243,8 +2202,8 @@ function plRecto(doc,card,x,y,w,h){
   cLines.slice(0,10).forEach((l,i)=>doc.text(l,x+4.5,boxY+7.4+i*2.75));
   // Texte : la police s'ajuste pour que tout tienne
   const texte=pdfSafe(card.texte||'');
-  const ty0=y+13.5, avail=boxY-2-ty0;
-  let fs=7.6,lines=[],lh=0;
+  const ty0=y+13.5+(opt.meta?5:0), avail=boxY-2-ty0;
+  let fs=opt.maxFs||7.6,lines=[],lh=0;
   for(;fs>=4.4;fs-=0.2){
     doc.setFont('helvetica','normal');doc.setFontSize(fs);
     lines=doc.splitTextToSize(texte,w-9);lh=fs*0.3528*1.36;
