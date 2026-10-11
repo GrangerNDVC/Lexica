@@ -785,7 +785,7 @@ textarea{resize:vertical;line-height:1.55}
 </div>
 
 </main>
-<div style="text-align:center;font-size:.7rem;color:var(--silver-lt);opacity:.6;padding:6px 10px 18px">LEXICA · version du 11/10/2026 (c) · connexion prof par e-mail · fiches prof</div>
+<div style="text-align:center;font-size:.7rem;color:var(--silver-lt);opacity:.6;padding:6px 10px 18px">LEXICA · version du 11/10/2026 (d) · connexion prof par e-mail · fiches prof</div>
 
 <!-- PROJECTION -->
 <div class="projection-overlay" id="projection-overlay">
@@ -869,7 +869,7 @@ try{
       const data = snapshot.val() || {};
       // On ignore toute carte dont l'identifiant contient autre chose que lettres/chiffres/_/-
       // (les identifiants sont insérés dans des boutons du panneau prof).
-      deck = Object.values(data).filter(c=>c && /^[A-Za-z0-9_-]+$/.test(String(c.id||'')));
+      deck = Object.entries(data).filter(([k,c])=>c && typeof c==='object' && /^[A-Za-z0-9_-]+$/.test(k)).map(([k,c])=>({...c,id:k}));
       fbReady = true;
       refreshActiveView();
     }, err=>{
@@ -2116,12 +2116,35 @@ function appliquerAnon(){
     okL.forEach(r=>delete anonCodes[r.g.key]);
     if(!ko.length){ toast(`🔐 ${okL.length} nom(s) remplacé(s) par un code`); return; }
     ko.forEach(r=>console.error('Anonymisation refusée pour', r.g.nom, r.err));
-    const denied = ko.some(r=>r.err && r.err.code==='PERMISSION_DENIED');
-    alert(`${okL.length} nom(s) remplacé(s).\n\n❌ Échec pour : ${ko.map(r=>r.g.nom+' ('+r.g.ids.length+' carte'+(r.g.ids.length>1?'s':'')+')').join(', ')}\n\n`
-      + (denied
-        ? 'Motif : refusé par les règles de sécurité Firebase.\n- Vérifie que tu es bien connectée avec ton compte prof (e-mail).\n- Si c\'est le cas : une carte de cet élève dépasse les limites des règles (illustration trop lourde, ou un champ manquant). Ouvre la console (F12) pour le détail.'
-        : 'Motif : problème de connexion ou erreur inattendue (voir la console, F12).'));
+    const head = `${okL.length} nom(s) remplacé(s).\n\n❌ Échec pour : ${ko.map(r=>r.g.nom+' ('+r.g.ids.length+' carte'+(r.g.ids.length>1?'s':'')+')').join(', ')}\n\nDiagnostic :\n`;
+    diagAnon(ko).then(rep=>alert(head+rep)).catch(()=>alert(head+'(diagnostic impossible — voir la console, F12)'));
   });
+}
+async function diagAnon(ko){
+  const u = fbAuth && fbAuth.currentUser;
+  const who = !u ? 'inconnue' : (u.isAnonymous ? 'session ANONYME (tu n\'es pas connectée en prof)' : u.email);
+  const out = [`Connexion actuelle : ${who}`];
+  const req = ['auteur','classe','titre','entree','texte','statut'];
+  for(const r of ko){
+    for(const id of r.g.ids.slice(0,3)){
+      try{
+        const snap = await fbDB.ref('cards/'+id).once('value');
+        if(!snap.exists()){ out.push(`• ${r.g.nom} : aucune carte sous l'identifiant ${id}`); continue; }
+        const v = snap.val()||{};
+        const miss = req.filter(k=>v[k]===undefined||v[k]===null);
+        const len = k=>String(v[k]==null?'':v[k]).length;
+        let test = '';
+        if(v.classe!==undefined){
+          try{ await fbDB.ref('cards/'+id+'/classe').set(v.classe); test=' ; écriture de test : acceptée'; }
+          catch(e){ test=' ; écriture de test : REFUSÉE'; }
+        }
+        out.push(`• ${r.g.nom} (« ${String(v.titre||'?').slice(0,30)} ») : champs manquants = ${miss.length?miss.join(', '):'aucun'} ; titre ${len('titre')} car., texte ${len('texte')} car., illustration ${len('illustration')} car.${test}`);
+      }catch(e){ out.push(`• ${r.g.nom} : lecture impossible (${e.code||e.message})`); }
+    }
+  }
+  out.push('', 'Compare l\'e-mail de « Connexion actuelle » avec celui écrit dans tes règles Firebase : ils doivent être identiques (minuscules).');
+  console.log('Diagnostic anonymisation\n'+out.join('\n'));
+  return out.join('\n');
 }
 // ══════════════════════════════════════════════════════
 // EXPORT PDF CARTES A6
@@ -2303,7 +2326,6 @@ function exportFichesProf(){
       const{jsPDF}=window.jspdf;
       const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
       const M=14,PW=210,PH=297,UW=PW-2*M;
-      const box=(x,y,sz=4)=>{doc.setDrawColor(26,26,46);doc.setLineWidth(.4);doc.rect(x,y,sz,sz);};
       cards.forEach((card,idx)=>{
         if(idx>0)doc.addPage();
         const nc=PL_NCOL[card.niveau]||PL_NCOL[2];
@@ -2317,16 +2339,14 @@ function exportFichesProf(){
         doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(70,70,80);
         const meta=pdfSafe(`Code ${card.auteur||'-'}  |  Classe ${card.classe||'-'}  |  ${ENTREE_FULL[card.entree]?ENTREE_FULL[card.entree].replace(/^\S+\s/,'').split(' - ')[0]:(card.entree||'-')}  |  ${[card.genre,card.type,card.registre].filter(Boolean).join(' / ')||'-'}  |  envoyee le ${card.dateEnvoi||'-'}`);
         doc.text(doc.splitTextToSize(meta,UW).slice(0,2),M,25);
-        // Blocs du bas, ancrés depuis le bas de page
-        const conts=(card.contraintes||[]).map(ct=>({lbl:(ct.type==='grammaire'?'[G] ':ct.type==='lexique'?'[L] ':ct.type==='conjugaison'?'[C] ':'[?] ')+pdfSafe(ct.val),temps:false}));
-        if(card.temps==='recit') conts.push({lbl:'[T] Temps du recit : passe simple / imparfait',temps:true});
-        const RH=11.5;
-        const remH=24, faultH=9, bonusH=9;
+        // Blocs du bas, ancrés depuis le bas de page : contraintes, total, remarques
+        const conts=(card.contraintes||[]).map(ct=>(ct.type==='grammaire'?'[G] ':ct.type==='lexique'?'[L] ':ct.type==='conjugaison'?'[C] ':'[?] ')+pdfSafe(ct.val));
+        if(card.temps==='recit') conts.push('[T] Temps du recit : passe simple / imparfait');
+        const RH=8, remH=36, totalH=9;
         const contH=conts.length*RH+7;
         const remTop=PH-M-remH;
-        const faultY=remTop-faultH-1;
-        const bonusY=faultY-bonusH-1;
-        const contTop=bonusY-contH-2;
+        const totalY=remTop-totalH-1;
+        const contTop=totalY-contH-2;
         // Texte agrandi (interligne large pour annoter au stylo)
         const ty0=33, avail=contTop-4-ty0;
         const texte=pdfSafe(card.texte||'');
@@ -2342,33 +2362,23 @@ function exportFichesProf(){
         doc.setDrawColor(200,195,180);doc.setLineWidth(.25);doc.rect(M,ty0-3,UW,avail+4);
         doc.setTextColor(20,20,30);
         doc.text(lines,M+2,ty0+fsz*0.3528,{lineHeightFactor:1.55});
-        // Contraintes + cases
+        // Contraintes (liste simple)
         doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...nc);
         doc.text('CONTRAINTES A VERIFIER',M,contTop+3.2);
-        conts.forEach((c,i)=>{
+        conts.forEach((lbl,i)=>{
           const y=contTop+7+i*RH;
           doc.setFillColor(i%2?255:240,i%2?255:238,i%2?255:228);doc.rect(M,y-1.5,UW,RH-0.5,'F');
-          doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(26,26,46);
-          doc.text(doc.splitTextToSize(c.lbl,92).slice(0,2),M+1.5,y+3.2,{lineHeightFactor:1.15});
-          doc.setFontSize(8.5);
-          const opts=c.temps?[['Respecte',112],['Erreurs -2',146]]:[['Trouvee +3',108],['Non trouvee',139],['Fausse -2',171]];
-          opts.forEach(([t,x])=>{box(x,y+0.2,4);doc.text(t,x+5.5,y+3.4);});
+          doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(26,26,46);
+          doc.text(doc.splitTextToSize(lbl,UW-4)[0]||'',M+1.5,y+3.4);
         });
-        // Bonus + fautes
-        doc.setFontSize(9);doc.setTextColor(26,26,46);
-        box(M,bonusY+1.5,4.2);doc.text('Meilleur texte  +3',M+6,bonusY+4.8);
-        box(M+48,bonusY+1.5,4.2);doc.text('Meilleur oral  +3',M+54,bonusY+4.8);
-        doc.setFont('helvetica','bold');doc.text('Total : ________ pts',PW-M,bonusY+4.8,{align:'right'});
-        doc.setFont('helvetica','normal');doc.setFontSize(8.5);
-        [['Orthographe',M],['Accords',M+44],['Ponctuation',M+82],['Syntaxe',M+124]].forEach(([t,x])=>{
-          doc.text(t+' :',x,faultY+5.5);doc.setDrawColor(120,120,120);doc.setLineWidth(.25);
-          doc.line(x+doc.getTextWidth(t+' : ')+1,faultY+5.7,x+doc.getTextWidth(t+' : ')+14,faultY+5.7);
-        });
+        // Total
+        doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(26,26,46);
+        doc.text('Total : ________ pts',PW-M,totalY+5.5,{align:'right'});
         // Remarques
         doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...nc);
         doc.text('REMARQUES',M,remTop+2.5);
         doc.setDrawColor(190,190,190);doc.setLineWidth(.2);
-        for(let k=1;k<=3;k++) doc.line(M,remTop+2.5+k*6.3,PW-M,remTop+2.5+k*6.3);
+        for(let k=1;k<=5;k++) doc.line(M,remTop+2.5+k*6.3,PW-M,remTop+2.5+k*6.3);
         doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(140,140,140);
         doc.text(`LEXICA - fiche prof - ${idx+1}/${cards.length}`,PW-M,PH-5,{align:'right'});
       });
